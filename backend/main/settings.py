@@ -46,9 +46,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "apps.account",
     "apps.task",
-    "apps.task_group",
     "apps.invitation",
-    "apps.group_membership",
 ]
 
 MIDDLEWARE = [
