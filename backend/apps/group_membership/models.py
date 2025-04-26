@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from apps.account.models import CustomUser
 
 class GroupMembership(models.Model):
     ROLE_CHOICES = [
@@ -7,7 +7,7 @@ class GroupMembership(models.Model):
         ('MEMBER', 'Member'),
     ]
     
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     group = models.ForeignKey('task_group.TaskGroup', on_delete=models.CASCADE)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='MEMBER')
     joined_at = models.DateTimeField(auto_now_add=True)

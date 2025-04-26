@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from apps.task_group.models import TaskGroup
+from apps.account.models import CustomUser
 
 class Task(models.Model):
     STATUS_CHOICES = [
@@ -23,8 +24,8 @@ class Task(models.Model):
     due_date = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_tasks')
-    assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_tasks')
+    created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='created_tasks')
+    assigned_to = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_tasks')
     group = models.ForeignKey(TaskGroup, on_delete=models.CASCADE, related_name='tasks')
     
     def __str__(self):
