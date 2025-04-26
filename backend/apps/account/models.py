@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from apps.book.models import Book
 
 
 # Create your models here.
@@ -15,9 +16,11 @@ class CustomUser(AbstractUser):
     - profile_picture: ForeignKey to store the profile picture of the user.
     - removed: BooleanField to store whether the user is removed or not.
     """
-
+    bio = models.TextField(blank=True)
     profile_picture = models.CharField(max_length=512)
-    removed = models.BooleanField(default=False)
+    profile_picture = models.URLField(blank=True)
+    books_read_count = models.PositiveIntegerField(default=0)
+    reviews_count = models.PositiveIntegerField(default=0)
 
     groups = models.ManyToManyField(
         "auth.Group",
@@ -43,21 +46,24 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.username
-    
-class GroupMembership(models.Model):
-    ROLE_CHOICES = [
-        ('ADMIN', 'Admin'),
-        ('MEMBER', 'Member'),
+
+class ReadingList(models.Model):
+    """Model for user reading lists (want to read, currently reading, etc.)"""
+    READING_STATUS_CHOICES = [
+        ('want_to_read', 'Want to Read'),
+        ('currently_reading', 'Currently Reading'),
+        ('read', 'Read'),
     ]
     
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    group = models.ForeignKey('task.TaskGroup', on_delete=models.CASCADE)
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='MEMBER')
-    joined_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='reading_lists')
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='in_reading_lists')
+    status = models.CharField(max_length=20, choices=READING_STATUS_CHOICES, default='want_to_read')
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_started = models.DateField(null=True, blank=True)
+    date_finished = models.DateField(null=True, blank=True)
     
     class Meta:
-        unique_together = ('user', 'group')
-    
+        unique_together = ['user', 'book']
+        
     def __str__(self):
-        return f"{self.user.username} - {self.group.name} ({self.role})"
-
+        return f"{self.user.username} - {self.book.title} ({self.get_status_display()})"

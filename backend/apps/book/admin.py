@@ -1,6 +1,6 @@
 from django.contrib import admin
-from .models import Invitation
+from .models import Book
 
-admin.site.register(Invitation)
+admin.site.register(Book)
 
 # Register your models here.

@@ -1,4 +1,4 @@
-from .models import CustomUser, GroupMembership
+from .models import CustomUser, ReadingList
 from rest_framework import serializers
 
 
@@ -7,6 +7,10 @@ class CustomUserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = "__all__"
 
+class ReadingListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReadingList
+        fields = "__all__"
 
 class AuthenticationSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=512)
@@ -19,9 +23,3 @@ class RegistrationSerializer(serializers.Serializer):
     last_name = serializers.CharField(max_length=512)
     email = serializers.CharField(max_length=512)
     password = serializers.CharField(max_length=512)
-
-class GroupMembershipSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = GroupMembership
-        fields = "__all__"
-        read_only_fields = ["joined_at"]

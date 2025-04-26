@@ -45,8 +45,8 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "apps.account",
-    "apps.task",
-    "apps.invitation",
+    "apps.book",
+    "apps.review",
 ]
 
 MIDDLEWARE = [

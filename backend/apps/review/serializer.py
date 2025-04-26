@@ -1,15 +1,15 @@
-from .models import TaskGroup, Task
+from .models import Review, Comment
 from rest_framework import serializers
 
 
-class TaskGroupSerializer(serializers.ModelSerializer):
+class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
-        model = TaskGroup
+        model = Review
         fields = "__all__"
         read_only_fields = ["created_at"]
 
-class TaskSerializer(serializers.ModelSerializer):
+class CommentSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Task
+        model = Comment
         fields = "__all__"
         read_only_fields = ["created_at"]

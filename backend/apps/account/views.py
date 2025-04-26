@@ -6,10 +6,10 @@ from .serializers import (
     CustomUserSerializer,
     AuthenticationSerializer,
     RegistrationSerializer,
-    GroupMembershipSerializer,
+    ReadingListSerializer,
 )
 from .utils.jwt import sign_as_jwt
-from .models import CustomUser, GroupMembership
+from .models import CustomUser, ReadingList
 from main.utils.generic_api import GenericView
 
 
@@ -18,11 +18,10 @@ class UserView(GenericView):
     serializer_class = CustomUserSerializer
     size_per_request = 1000
 
-class ImageView(GenericView):
-    queryset = GroupMembership.objects.all()
-    serializer_class = GroupMembershipSerializer
-    # permission_classes = [IsAuthenticated]
-
+class ReadingListView(GenericView):
+    queryset = ReadingList.objects.all()
+    serializer_class = ReadingListSerializer
+    size_per_request = 1000
 
 class AuthenticationView(APIView):
     def post(self, request, format=None):
