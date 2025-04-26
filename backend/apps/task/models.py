@@ -1,8 +1,18 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
-from apps.task_group.models import TaskGroup
-from apps.account.models import CustomUser
+from apps.account.models import CustomUser, GroupMembership
+
+
+class TaskGroup(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='created_groups')
+    members = models.ManyToManyField(CustomUser, through=GroupMembership, related_name='task_groups')
+
+    def __str__(self):
+        return self.name
 
 class Task(models.Model):
     STATUS_CHOICES = [
