@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser
+from .models import CustomUser, GroupMembership
 
 @admin.register(CustomUser)
 class CustomUserAdmin(admin.ModelAdmin):
@@ -28,3 +28,5 @@ class CustomUserAdmin(admin.ModelAdmin):
         if obj:
             return self.readonly_fields + ("password",)
         return self.readonly_fields
+    
+admin.register(GroupMembership)
