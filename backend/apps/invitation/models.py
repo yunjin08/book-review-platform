@@ -1,7 +1,7 @@
 from django.db import models
 from apps.account.models import CustomUser
 from django.utils.crypto import get_random_string
-from apps.task_group.models import TaskGroup
+from apps.task.models import TaskGroup
 
 class Invitation(models.Model):
     STATUS_CHOICES = [
