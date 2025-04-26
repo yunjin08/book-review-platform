@@ -10,18 +10,56 @@ from .serializers import (
 )
 from .utils.jwt import sign_as_jwt
 from .models import CustomUser, ReadingList
+from apps.review.serializer import ReviewSerializer
 from main.utils.generic_api import GenericView
+from rest_framework.decorators import action
 
 
 class UserView(GenericView):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
     size_per_request = 1000
+    @action(detail=True, methods=['get'])
+
+    @action(detail=True, methods=['get'])
+    def reviews(self, request, pk=None):
+        """Get all reviews for a specific user"""
+        user = self.get_object()
+        reviews = user.reviews.all()  # Assuming you have a related_name='reviews' on your Review model
+        serializer = ReviewSerializer(reviews, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['get'])
+    def reading_history(self, request, pk=None):
+        """Get complete reading history for a user"""
+        user = self.get_object()
+        reading_lists = user.reading_lists.all()
+        serializer = ReadingListSerializer(reading_lists, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['get'])
+    def currently_reading(self, request, pk=None):
+        """Get books the user is currently reading"""
+        user = self.get_object()
+        current_books = user.reading_lists.filter(status='currently_reading')
+        serializer = ReadingListSerializer(current_books, many=True)
+        return Response(serializer.data)
 
 class ReadingListView(GenericView):
     queryset = ReadingList.objects.all()
     serializer_class = ReadingListSerializer
     size_per_request = 1000
+    allowed_filter_fields = ['user', 'book', 'status']
+
+    def filter_queryset(self, filters, excludes):
+        # Add custom filtering logic if needed
+        queryset = super().filter_queryset(filters, excludes)
+        
+        # Example: If you want to always include some default filtering
+        if 'user' not in filters and hasattr(self.request, 'user'):
+            queryset = queryset.filter(user=self.request.user)
+            
+        return queryset
 
 class AuthenticationView(APIView):
     def post(self, request, format=None):

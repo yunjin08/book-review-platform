@@ -43,6 +43,20 @@ class CustomUser(AbstractUser):
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
+    
+    @property
+    def currently_reading_books(self):
+        return self.reading_lists.filter(status='currently_reading')
+    
+    @property
+    def read_books(self):
+        return self.reading_lists.filter(status='read')
+    
+    def update_counts(self):
+        """Update the counts for books read and reviews"""
+        self.books_read_count = self.read_books.count()
+        self.reviews_count = self.reviews.count()  # Assuming you have a Review model
+        self.save()
 
     def __str__(self):
         return self.username
