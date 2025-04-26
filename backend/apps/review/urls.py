@@ -2,24 +2,49 @@ from django.urls import path
 from .views import ReviewView, CommentView
 
 urlpatterns = [
+    # Review endpoints
     path(
-        "",
-        ReviewView.as_view({"get": "list", "post": "create"}),
-        name="document-list",
+        "reviews/",
+        ReviewView.as_view({
+            "get": "list", 
+            "post": "create"
+        }),
+        name="review-list",
     ),
     path(
-        "<int:pk>/",
-        ReviewView.as_view({"get": "retrieve", "put": "update", "delete": "destroy"}),
-        name="document-detail",
+        "reviews/<int:pk>/",
+        ReviewView.as_view({
+            "get": "retrieve", 
+            "put": "update", 
+            "delete": "destroy"
+        }),
+        name="review-detail",
     ),
     path(
-        "",
-        CommentView.as_view({"get": "list", "post": "create"}),
-        name="document-list",
+        "reviews/<int:pk>/comments/",
+        ReviewView.as_view({
+            "get": "comments", 
+            "post": "add_comment"
+        }),
+        name="review-comments",
+    ),
+    
+    # Comment endpoints
+    path(
+        "comments/",
+        CommentView.as_view({
+            "get": "list", 
+            "post": "create"
+        }),
+        name="comment-list",
     ),
     path(
-        "<int:pk>/",
-        CommentView.as_view({"get": "retrieve", "put": "update", "delete": "destroy"}),
-        name="document-detail",
+        "comments/<int:pk>/",
+        CommentView.as_view({
+            "get": "retrieve", 
+            "put": "update", 
+            "delete": "destroy"
+        }),
+        name="comment-detail",
     ),
 ]

@@ -52,6 +52,28 @@ class CustomUser(AbstractUser):
     def read_books(self):
         return self.reading_lists.filter(status='read')
     
+    @property
+    def average_rating(self):
+        """Calculate the average rating for this book"""
+        avg = self.reviews.aggregate(Avg('rating'))['rating__avg']
+        return round(avg, 2) if avg else 0
+    
+    @property
+    def rating_distribution(self):
+        """Get count of reviews for each rating"""
+        return dict(
+            self.reviews
+            .values_list('rating')
+            .annotate(count=models.Count('rating'))
+            .order_by('rating')
+        )
+    
+    def update_rating_stats(self):
+        """Update denormalized rating stats"""
+        self.rating_count = self.reviews.count()
+        self.rating_avg = self.average_rating
+        self.save(update_fields=['rating_count', 'rating_avg'])
+    
     def update_counts(self):
         """Update the counts for books read and reviews"""
         self.books_read_count = self.read_books.count()

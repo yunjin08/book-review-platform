@@ -1,15 +1,26 @@
 from .models import Review, Comment
 from rest_framework import serializers
-
-
-class ReviewSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Review
-        fields = "__all__"
-        read_only_fields = ["created_at"]
+from apps.account.serializer import CustomUserSerializer
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = "__all__"
-        read_only_fields = ["created_at"]
+        read_only_fields = ['user', 'created_at', 'updated_at']
+
+class ReviewSerializer(serializers.ModelSerializer):
+    user = CustomUserSerializer(read_only=True)
+    comments = CommentSerializer(many=True, read_only=True)
+    average_rating = serializers.SerializerMethodField()
+    class Meta:
+        model = Review
+        fields = "__all__"
+        read_only_fields = ['user', 'created_at', 'updated_at', 'comments']
+    
+    def get_average_rating(self, obj):
+        return obj.book.average_rating
+    
+    def validate_rating(self, value):
+        if not 1 <= value <= 5:
+            raise serializers.ValidationError("Rating must be between 1 and 5")
+        return value
