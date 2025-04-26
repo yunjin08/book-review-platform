@@ -44,10 +44,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "corsheaders",
     "rest_framework",
-    "apps.invitation",
-    "apps.group_membership",
+    "apps.account",
     "apps.task",
     "apps.task_group",
+    "apps.invitation",
+    "apps.group_membership",
 ]
 
 MIDDLEWARE = [
