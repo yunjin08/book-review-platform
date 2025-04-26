@@ -9,10 +9,10 @@ class TaskGroupMembersAPIView(APIView):
     """
     API endpoint for listing group members
     """
-    permission_classes = [IsAuthenticated, IsGroupMember]
+    # permission_classes = [IsAuthenticated, IsGroupMember]
 
-    def get(self, request, pk):
-        # group = get_object_or_404(TaskGroup, pk=pk, members=request.user)
-        # memberships = GroupMembership.objects.filter(group=group)
-        # serializer = GroupMembershipSerializer(memberships, many=True)
-        # return Response(serializer.data)
+    # def get(self, request, pk):
+    #     # group = get_object_or_404(TaskGroup, pk=pk, members=request.user)
+    #     # memberships = GroupMembership.objects.filter(group=group)
+    #     # serializer = GroupMembershipSerializer(memberships, many=True)
+    #     # return Response(serializer.data)
