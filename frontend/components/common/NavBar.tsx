@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FaUserCircle } from "react-icons/fa";
 import { IoSearch } from "react-icons/io5";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -12,12 +12,18 @@ import { SortOptions } from "@/interface";
 
 type Section = "bookRate" | "activeUsers" | "mostReviewed";
 
-export default function NavBar({ activeSection, onSectionChange }: { activeSection: Section; onSectionChange: (section: Section) => void }) {
+export default function NavBar({
+  activeSection,
+  onSectionChange,
+}: {
+  activeSection: Section;
+  onSectionChange: (section: Section) => void;
+}) {
   // State to track the selected sort option for each filter
   const [sortOption, setSortOption] = useState<SortOptions>({
     bookRate: "highest",
     activeUsers: "most",
-    mostReviewed: "most"
+    mostReviewed: "most",
   });
 
   // Handler for filter button clicks
@@ -29,7 +35,7 @@ export default function NavBar({ activeSection, onSectionChange }: { activeSecti
   const handleSortChange = (value: string) => {
     setSortOption({
       ...sortOption,
-      [activeSection]: value
+      [activeSection]: value,
     });
   };
 
@@ -39,17 +45,17 @@ export default function NavBar({ activeSection, onSectionChange }: { activeSecti
       case "bookRate":
         return [
           { value: "highest", label: "Highest Rated" },
-          { value: "lowest", label: "Lowest Rated" }
+          { value: "lowest", label: "Lowest Rated" },
         ];
       case "activeUsers":
         return [
           { value: "most", label: "Most Active" },
-          { value: "least", label: "Least Active" }
+          { value: "least", label: "Least Active" },
         ];
       case "mostReviewed":
         return [
           { value: "most", label: "Most Reviews" },
-          { value: "least", label: "Least Reviews" }
+          { value: "least", label: "Least Reviews" },
         ];
       default:
         return [];
@@ -57,42 +63,73 @@ export default function NavBar({ activeSection, onSectionChange }: { activeSecti
   };
 
   return (
-    <nav className="sticky top-0 flex flex-col md:flex-row shadow-xl w-full px-3 md:px-12 xl:px-24 py-4 md:py-4 items-center justify-between border-b-2 bg-white border-slate-800 gap-4 z-10">
+    <nav className="md:sticky md:top-0 flex flex-col md:flex-row shadow-xl w-full px-6 md:px-12 xl:px-24 py-4 md:py-4 items-center justify-between border-b-2 bg-white border-slate-800 gap-4 z-10">
       <div className="flex flex-col md:flex-row justify-between items-center w-full gap-4">
-        <div className="text-sm md:text-2xl font-bold hover:opacity-50 cursor-pointer">
+        <div className="flex flex-row text-sm md:text-2xl font-bold hover:opacity-50 cursor-pointer w-full md:w-auto justify-between md:justify-center items-center">
           Library ni Jed
+          <div className="flex md:hidden items-center">
+            <button
+              className="flex items-center text-slate-800 hover:opacity-50 transition cursor-pointer"
+              onClick={() => {
+                console.log("Go to user profile");
+              }}
+            >
+              <FaUserCircle size={32} />
+            </button>
+          </div>
         </div>
-        
+
+        <div></div>
+
         {/* Filter buttons and dropdown */}
         <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
           <div className="flex items-center gap-2">
-            <button 
-              className={`px-3 py-1 rounded-md text-xs md:text-sm font-medium transition ${activeSection === "bookRate" ? "bg-slate-800 text-white" : "bg-gray-200 text-slate-800 hover:bg-gray-300"}`}
+            <button
+              className={`px-3 py-1 rounded-md text-xs md:text-sm font-medium transition ${
+                activeSection === "bookRate"
+                  ? "bg-slate-800 text-white"
+                  : "bg-gray-200 text-slate-800 hover:bg-gray-300"
+              }`}
               onClick={() => handleFilterClick("bookRate")}
             >
               Book Rate
             </button>
-            <button 
-              className={`px-3 py-1 rounded-md text-xs md:text-sm font-medium transition ${activeSection === "activeUsers" ? "bg-slate-800 text-white" : "bg-gray-200 text-slate-800 hover:bg-gray-300"}`}
+            <button
+              className={`px-3 py-1 rounded-md text-xs md:text-sm font-medium transition ${
+                activeSection === "activeUsers"
+                  ? "bg-slate-800 text-white"
+                  : "bg-gray-200 text-slate-800 hover:bg-gray-300"
+              }`}
               onClick={() => handleFilterClick("activeUsers")}
             >
               Active Users
             </button>
-            <button 
-              className={`px-3 py-1 rounded-md text-xs md:text-sm font-medium transition ${activeSection === "mostReviewed" ? "bg-slate-800 text-white" : "bg-gray-200 text-slate-800 hover:bg-gray-300"}`}
+            <button
+              className={`px-3 py-1 rounded-md text-xs md:text-sm font-medium transition ${
+                activeSection === "mostReviewed"
+                  ? "bg-slate-800 text-white"
+                  : "bg-gray-200 text-slate-800 hover:bg-gray-300"
+              }`}
               onClick={() => handleFilterClick("mostReviewed")}
             >
               Most Reviewed
             </button>
           </div>
-          
-          <Select value={sortOption[activeSection]} onValueChange={handleSortChange}>
+
+          <Select
+            value={sortOption[activeSection]}
+            onValueChange={handleSortChange}
+          >
             <SelectTrigger className="w-32 md:w-40 h-[1rem] text-xs md:text-sm bg-white">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
               {getDropdownOptions().map((option) => (
-                <SelectItem key={option.value} value={option.value} className="text-xs md:text-sm">
+                <SelectItem
+                  key={option.value}
+                  value={option.value}
+                  className="text-xs md:text-sm"
+                >
                   {option.label}
                 </SelectItem>
               ))}
@@ -112,11 +149,11 @@ export default function NavBar({ activeSection, onSectionChange }: { activeSecti
               console.log("Search clicked");
             }}
           >
-            <IoSearch size={20} className="text-white"/>
+            <IoSearch size={20} className="text-white" />
           </button>
         </div>
 
-        <div className="flex items-center">
+        <div className="hidden md:flex items-center">
           <button
             className="flex items-center text-slate-800 hover:opacity-50 transition cursor-pointer"
             onClick={() => {
@@ -127,7 +164,7 @@ export default function NavBar({ activeSection, onSectionChange }: { activeSecti
           </button>
         </div>
       </div>
-      
+
       {/* Mobile search bar */}
       <div className="flex md:hidden w-full relative">
         <input
