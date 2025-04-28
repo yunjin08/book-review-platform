@@ -137,3 +137,23 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+/* For most modern browsers */
+::-webkit-scrollbar {
+  width: 6px; /* thin scrollbar width */
+  height: 6px; /* for horizontal scrollbars */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888; /* thumb color */
+  border-radius: 6px; /* rounded corners */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555; /* darker on hover */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* track background */
+}
