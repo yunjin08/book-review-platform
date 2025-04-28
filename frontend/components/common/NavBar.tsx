@@ -54,7 +54,7 @@ export default function NavBar({ activeSection, onSectionChange }) {
   };
 
   return (
-    <nav className="sticky top-0 flex flex-col md:flex-row shadow-2xl w-full px-3 md:px-12 xl:px-24 py-4 md:py-4 items-center justify-between border-b-2 bg-white border-slate-800 gap-4 z-10">
+    <nav className="sticky top-0 flex flex-col md:flex-row shadow-xl w-full px-3 md:px-12 xl:px-24 py-4 md:py-4 items-center justify-between border-b-2 bg-white border-slate-800 gap-4 z-10">
       <div className="flex flex-col md:flex-row justify-between items-center w-full gap-4">
         <div className="text-sm md:text-2xl font-bold hover:opacity-50 cursor-pointer">
           Library ni Jed
