@@ -1,56 +1,57 @@
 import React from "react";
 import BookCard from "./BookCard";
-import { Book } from "@/interface";
 
+interface Book {
+  title: string;
+  author: string;
+  genre: string;
+  rating: number;
+  coverUrl: string;
+}
 
+// Test data for the books
 const books: Book[] = [
   {
-    id: 1,
     title: "The Great Gatsby",
     author: "F. Scott Fitzgerald",
     genre: "Classic",
     rating: 5,
-    cover_image: "/logo.png",
+    coverUrl: "/logo.png",
   },
   {
-    id: 2,
     title: "To Kill a Mockingbird",
     author: "Harper Lee",
     genre: "Historical Fiction",
     rating: 5,
-    cover_image: "/logo.png",
+    coverUrl: "/logo.png",
   },
   {
-    id: 3,
     title: "1984",
     author: "George Orwell",
     genre: "Dystopian",
     rating: 4,
-    cover_image: "/logo.png",
+    coverUrl: "/logo.png",
   },
   {
-    id: 4,
     title: "Pride and Prejudice",
     author: "Jane Austen",
     genre: "Romance",
     rating: 5,
-    cover_image: "/logo.png",
+    coverUrl: "/logo.png",
   },
   {
-    id: 5,
     title: "Moby Dick",
     author: "Herman Melville",
     genre: "Adventure",
     rating: 3,
-    cover_image: "/logo.png",
+    coverUrl: "/logo.png",
   },
   {
-    id: 6,
     title: "The Hobbit",
     author: "J.R.R. Tolkien",
     genre: "Fantasy",
     rating: 5,
-    cover_image: "/logo.png",
+    coverUrl: "/logo.png",
   },
 ];
 
@@ -73,7 +74,7 @@ export default function BestRatedSection() {
             author={book.author}
             genre={book.genre}
             rating={book.rating}
-            coverUrl={book.cover_image || "/logo.png"}
+            coverUrl={book.coverUrl || "/logo.png"}
           />
         ))}
       </div>
