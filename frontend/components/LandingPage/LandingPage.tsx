@@ -4,12 +4,13 @@ import BestRatedSection from "./BestRatedSection";
 import MostReviewedSection from "./MostReviewedSection";
 import MostActiveSection from "./MostActiveReviewers";
 import Footer from "@/components/common/Footer";
+import { Section } from "@/types";
 
 export default function LandingPage() {
-  const [activeSection, setActiveSection] = useState("mostReviewed");
+  const [activeSection, setActiveSection] = useState<Section>("mostReviewed");
   
   // Function to handle section changes from the NavBar
-  const handleSectionChange = (section) => {
+  const handleSectionChange = (section: Section) => {
     setActiveSection(section);
   };
 

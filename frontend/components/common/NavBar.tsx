@@ -8,22 +8,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SortOptions } from "@/interface";
 
-export default function NavBar({ activeSection, onSectionChange }) {
+type Section = "bookRate" | "activeUsers" | "mostReviewed";
+
+export default function NavBar({ activeSection, onSectionChange }: { activeSection: Section; onSectionChange: (section: Section) => void }) {
   // State to track the selected sort option for each filter
-  const [sortOption, setSortOption] = useState({
+  const [sortOption, setSortOption] = useState<SortOptions>({
     bookRate: "highest",
     activeUsers: "most",
     mostReviewed: "most"
   });
 
   // Handler for filter button clicks
-  const handleFilterClick = (filter) => {
+  const handleFilterClick = (filter: Section) => {
     onSectionChange(filter);
   };
 
   // Handler for dropdown selection changes
-  const handleSortChange = (value) => {
+  const handleSortChange = (value: string) => {
     setSortOption({
       ...sortOption,
       [activeSection]: value
