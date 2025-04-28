@@ -50,7 +50,7 @@ const users: User[] = [
 
 export default function MostActiveSection() {
   return (
-    <div className="flex flex-col w-full px-3 md:px-24 xl:px-72 pt-4 md:pt-8 pb-8 md:pb-16">
+    <div className="flex flex-col w-full px-3 text-black md:px-24 xl:px-72 pt-4 md:pt-8 pb-8 md:pb-16">
       <p className="text-2xl md:text-4xl font-bold mb-4">Most Active Users</p>
       <p className="text-xs md:text-lg text-justify mb-4">
         These are the users who have been leading the conversation, sharing
