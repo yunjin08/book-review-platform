@@ -8,6 +8,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { SortOptions } from "@/interface";
 
 type Section = "bookRate" | "activeUsers" | "mostReviewed";
@@ -117,14 +124,34 @@ export default function NavBar({ activeSection, onSectionChange }: { activeSecti
         </div>
 
         <div className="flex items-center">
-          <button
-            className="flex items-center text-slate-800 hover:opacity-50 transition cursor-pointer"
-            onClick={() => {
-              console.log("Go to user profile");
-            }}
-          >
-            <FaUserCircle size={32} />
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center text-slate-800 hover:opacity-50 transition cursor-pointer">
+                <FaUserCircle size={32} />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem 
+                className="cursor-pointer"
+                onClick={() => console.log("Navigate to read history")}
+              >
+                View Read History
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                className="cursor-pointer"
+                onClick={() => console.log("Navigate to ratings")}
+              >
+                View Ratings
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                className="cursor-pointer text-red-500"
+                onClick={() => console.log("Logout user")}
+              >
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
       
