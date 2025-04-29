@@ -1,6 +1,6 @@
 import React, { lazy } from "react";
 
-const BookCard = lazy(() => import("./BookCard"));
+const BookCard = lazy(() => import("../common/BookCard"));
 
 interface Book {
   title: string;
