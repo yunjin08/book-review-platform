@@ -6,17 +6,14 @@ from .serializer import BookSerializer, GenreSerializer, AuthorSerializer
 class BookView(GenericView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    # permission_classes = [IsAuthenticated]
 
 class GenreView(GenericView):
     queryset = Book.objects.all()
     serializer_class = GenreSerializer
-    # permission_classes = [IsAuthenticated]
 
 class AuthorSerializer(GenericView):
     queryset = Book.objects.all()
     serializer_class = AuthorSerializer
-    # permission_classes = [IsAuthenticated]
 
 
 

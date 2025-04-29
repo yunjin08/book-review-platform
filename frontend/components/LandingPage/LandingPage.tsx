@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, Suspense, lazy } from "react";
 import NavBar from "@/components/common/NavBar";
 import BestRatedSection from "./BestRatedSection";
-import MostReviewedSection from "./MostReviewedSection";
-import MostActiveSection from "./MostActiveReviewers";
 import Footer from "@/components/common/Footer";
 import FilterControls from "./FilterControls";
 
 type Section = "bookRate" | "activeUsers" | "mostReviewed";
+
+const MostReviewedSection = lazy(() => import("./MostReviewedSection"));
+const MostActiveSection = lazy(() => import("./MostActiveReviewers"));
 
 export default function LandingPage() {
   const [activeSection, setActiveSection] = useState<Section>("mostReviewed");

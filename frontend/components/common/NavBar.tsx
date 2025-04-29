@@ -8,8 +8,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuthStore } from "@/store/auth";
+import { useRouter } from "next/navigation";
 
 export default function NavBar() {
+  const { isAuthenticated, logout } = useAuthStore();
+  const router = useRouter();
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
   return (
     <nav className="md:sticky md:top-0 flex flex-col md:flex-row shadow-xl w-full px-6 md:px-12 xl:px-24 py-4 md:py-4 items-center justify-between bg-white gap-4 z-10">
       <div className="flex flex-col md:flex-row justify-between items-center w-full gap-4">
@@ -71,7 +79,7 @@ export default function NavBar() {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem
+            {isAuthenticated ? <><DropdownMenuItem
                 className="cursor-pointer"
                 onClick={() => console.log("Navigate to read history")}
               >
@@ -86,10 +94,15 @@ export default function NavBar() {
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="cursor-pointer text-red-500"
-                onClick={() => console.log("Logout user")}
+                onClick={handleLogout}
               >
                 Logout
-              </DropdownMenuItem>
+              </DropdownMenuItem></>:<DropdownMenuItem
+                className="cursor-pointer hover:bg-gray-200"
+                onClick={() => router.push("/login")}
+              >
+                Login
+              </DropdownMenuItem>}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

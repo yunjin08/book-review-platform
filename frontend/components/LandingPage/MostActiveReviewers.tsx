@@ -1,5 +1,6 @@
-import React from "react";
-import UserCard from "./UserCard";
+import React, { lazy } from "react";
+
+const UserCard = lazy(() => import("./UserCard"));
 
 interface User {
   name: string;

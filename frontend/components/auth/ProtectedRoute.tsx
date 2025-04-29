@@ -1,4 +1,4 @@
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { useEffect, ReactNode } from 'react';
 import { useAuthStore } from '@/store/auth';
 import Loader from '@/components/common/Loader';
