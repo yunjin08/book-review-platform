@@ -4,14 +4,27 @@ import BestRatedSection from "./BestRatedSection";
 import MostReviewedSection from "./MostReviewedSection";
 import MostActiveSection from "./MostActiveReviewers";
 import Footer from "@/components/common/Footer";
-import { Section } from "@/types";
+import FilterControls from "./FilterControls";
+
+type Section = "bookRate" | "activeUsers" | "mostReviewed";
 
 export default function LandingPage() {
   const [activeSection, setActiveSection] = useState<Section>("mostReviewed");
-  
-  // Function to handle section changes from the NavBar
+  const [sortOption, setSortOption] = useState({
+    bookRate: "highest",
+    activeUsers: "most",
+    mostReviewed: "most",
+  });
+
   const handleSectionChange = (section: Section) => {
     setActiveSection(section);
+  };
+
+  const handleSortChange = (value: string) => {
+    setSortOption({
+      ...sortOption,
+      [activeSection]: value,
+    });
   };
 
   const renderActiveSection = () => {
@@ -23,12 +36,21 @@ export default function LandingPage() {
       case "mostReviewed":
         return <MostReviewedSection />;
       default:
-        return <MostReviewedSection />; // Default fallback
+        return <MostReviewedSection />;
     }
   };
+
   return (
     <div className="flex flex-col bg-white text-black w-screen min-h-screen">
-      <NavBar activeSection={activeSection} onSectionChange={handleSectionChange}/>
+      <NavBar />
+      <div className="md:px-24 xl:px-72 xl:px-24 pt-4 md:pt-8">
+        <FilterControls
+          activeSection={activeSection}
+          sortOption={sortOption}
+          onSectionChange={handleSectionChange}
+          onSortChange={handleSortChange}
+        />
+      </div>
       {renderActiveSection()}
       <Footer />
     </div>
