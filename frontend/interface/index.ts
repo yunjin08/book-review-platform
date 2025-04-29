@@ -65,7 +65,7 @@ export interface Comment {
 }
   
 
-  // For paginated API responses
+// For paginated API responses
 export interface PaginatedResponse<T> {
     count: number;
     next: string | null;
@@ -73,7 +73,7 @@ export interface PaginatedResponse<T> {
     results: T[];
 }
 
- // For paginated Sort Options
+// For paginated Sort Options
 export interface SortOptions {
     bookRate: string;
     activeUsers: string;
