@@ -16,7 +16,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SortOptions } from "@/interface";
-
+import { useAuthStore } from "@/store/auth";
+import { useRouter } from "next/navigation";
 type Section = "bookRate" | "activeUsers" | "mostReviewed";
 
 export default function NavBar({
@@ -27,6 +28,9 @@ export default function NavBar({
   onSectionChange: (section: Section) => void;
 }) {
   // State to track the selected sort option for each filter
+
+  const { isAuthenticated } = useAuthStore();
+  const router = useRouter();
   const [sortOption, setSortOption] = useState<SortOptions>({
     bookRate: "highest",
     activeUsers: "most",
@@ -168,7 +172,7 @@ export default function NavBar({
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem
+            {isAuthenticated ? <><DropdownMenuItem
                 className="cursor-pointer"
                 onClick={() => console.log("Navigate to read history")}
               >
@@ -186,7 +190,12 @@ export default function NavBar({
                 onClick={() => console.log("Logout user")}
               >
                 Logout
-              </DropdownMenuItem>
+              </DropdownMenuItem></>:<DropdownMenuItem
+                className="cursor-pointer hover:bg-gray-200"
+                onClick={() => router.push("/login")}
+              >
+                Login
+              </DropdownMenuItem>}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
