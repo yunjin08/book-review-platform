@@ -6,6 +6,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { FaBook, FaPlus } from "react-icons/fa";
 
 type Section = "bookRate" | "activeUsers" | "mostReviewed";
 
@@ -14,6 +16,7 @@ interface FilterControlsProps {
   sortOption: { [key in Section]: string };
   onSectionChange: (section: Section) => void;
   onSortChange: (value: string) => void;
+  onAddBookClick?: () => void;
 }
 
 export default function FilterControls({
@@ -21,6 +24,7 @@ export default function FilterControls({
   sortOption,
   onSectionChange,
   onSortChange,
+  onAddBookClick,
 }: FilterControlsProps) {
   const getDropdownOptions = () => {
     switch (activeSection) {
@@ -45,7 +49,7 @@ export default function FilterControls({
   };
 
   return (
-    <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
+    <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4">
       <div className="flex items-center gap-2">
         <button
           className={`px-3 py-1 rounded-md text-xs md:text-sm font-medium transition ${
@@ -79,22 +83,33 @@ export default function FilterControls({
         </button>
       </div>
 
-      <Select value={sortOption[activeSection]} onValueChange={onSortChange}>
-        <SelectTrigger className="w-32 md:w-40 h-[1rem] text-xs md:text-sm bg-white">
-          <SelectValue placeholder="Sort by" />
-        </SelectTrigger>
-        <SelectContent>
-          {getDropdownOptions().map((option) => (
-            <SelectItem
-              key={option.value}
-              value={option.value}
-              className="text-xs md:text-sm"
-            >
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="flex flex-row items-center gap-2 md:w-auto justify-start md:justify-end">
+        <Select value={sortOption[activeSection]} onValueChange={onSortChange}>
+          <SelectTrigger className="w-32 md:w-40 text-xs md:text-sm bg-white">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            {getDropdownOptions().map((option) => (
+              <SelectItem
+                key={option.value}
+                value={option.value}
+                className="text-xs md:text-sm"
+              >
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Button
+          className="bg-blue-600 text-white hover:bg-blue-700 text-xs md:text-sm flex items-center gap-1 cursor-pointer"
+          onClick={onAddBookClick} // Trigger modal
+        >
+          <FaBook className="w-3 h-3 md:w-4 md:h-4" />
+          <span>Add Book</span>
+          <FaPlus className="ml-3 w-2 h-2 md:w-3 md:h-3" />
+        </Button>
+      </div>
     </div>
   );
 }
