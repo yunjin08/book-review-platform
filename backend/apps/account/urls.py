@@ -7,7 +7,7 @@ urlpatterns = [
     path("users/<int:pk>/reviews/", UserView.as_view({"get": "reviews"}), name="user-reviews"),
     path("users/<int:pk>/reading_history/", UserView.as_view({"get": "reading_history"}), name="user-reading-history"),
     path("users/<int:pk>/currently_reading/", UserView.as_view({"get": "currently_reading"}), name="user-currently-reading"),
-    
+    path("users/profile/", UserView.as_view({"get": "profile"}), name="user-profile"),
     path(
         "<int:pk>/reading_list",
         ReadingListView.as_view({"get": "retrieve", "put": "update", "delete": "destroy"}),

@@ -2,7 +2,7 @@ from django.db import transaction
 from django.contrib.auth import authenticate
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from main.permissions import IsTokenValidated
 from .serializer import (
     CustomUserSerializer,
     AuthenticationSerializer,
@@ -21,7 +21,14 @@ class UserView(GenericView):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
     size_per_request = 1000
+    permission_classes = [IsTokenValidated]
+    
     @action(detail=True, methods=['get'])
+    def profile(self, request, pk=None):
+        """Get user profile"""
+        user = self.get_object()
+        serializer = CustomUserSerializer(user)
+        return Response(serializer.data)
 
     @action(detail=True, methods=['get'])
     def reviews(self, request, pk=None):
@@ -52,6 +59,7 @@ class ReadingListView(GenericView):
     serializer_class = ReadingListSerializer
     size_per_request = 1000
     allowed_filter_fields = ['user', 'book', 'status']
+    permission_classes = [IsTokenValidated]
 
     def filter_queryset(self, filters, excludes):
         # Add custom filtering logic if needed
@@ -80,7 +88,10 @@ class AuthenticationView(APIView):
         user = authenticate(username=username, password=password)
 
         if user is not None:
-            payload = {"email": user.email}
+            payload = {
+                "email": user.email,
+                "user_id": user.id
+            }
 
             try:
                 token = sign_as_jwt(payload)
@@ -89,7 +100,6 @@ class AuthenticationView(APIView):
 
             user_serializer = CustomUserSerializer(user)
 
-            print(f"{user_serializer.data['username']} successfully authenticated!")
             return Response({"token": token, "user": user_serializer.data})
 
         else:
@@ -132,13 +142,26 @@ class RegistrationView(APIView):
 
             print(f"Google User {user.username} Successfully Created!")
 
-            return Response({"username": user.username})
+            # Generate JWT token
+            payload = {"email": user.email}
+            try:
+                token = sign_as_jwt(payload)
+            except:
+                return Response({"error": "Failed JWT Signing"}, status=500)
+
+            # Serialize user data
+            user_serializer = CustomUserSerializer(user)
+
+            return Response({
+                "token": token,
+                "user": user_serializer.data
+            })
         else:
             print(f"User {user.username} Already Exists!")
             return Response({"error": "User already exists"}, status=409)
 
 class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsTokenValidated]
 
     def post(self, request, format=None):
         # In JWT, logout is handled client-side by removing the token
