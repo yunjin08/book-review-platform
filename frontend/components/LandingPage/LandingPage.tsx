@@ -1,3 +1,5 @@
+'use client'
+
 import FilterControls from './FilterControls'
 
 type Section = 'bookRate' | 'activeUsers' | 'mostReviewed'
@@ -43,11 +45,8 @@ export default function LandingPage() {
 
     return (
         <div className="flex flex-col bg-white text-black w-screen min-h-screen">
-            <NavBar
-                activeSection={activeSection}
-                onSectionChange={handleSectionChange}
-            />
-            <div className="md:px-24 xl:px-72 xl:px-24 pt-4 md:pt-8">
+            <NavBar />
+            <div className="md:px-24 xl:px-72 pt-4 md:pt-8">
                 <FilterControls
                     activeSection={activeSection}
                     sortOption={sortOption}
