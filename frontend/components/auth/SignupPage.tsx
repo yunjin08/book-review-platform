@@ -11,7 +11,7 @@ export default function SignupPage() {
           <h2 className="text-2xl font-bold mb-6 text-center">
             Sign Up
           </h2>
-          <form className="flex flex-col gap-4 w-full">
+          <form className="flex flex-col gap-3 w-full">
             <div className="flex flex-col">
               <label htmlFor="username" className="text-sm mb-1">
                 Username
@@ -36,6 +36,33 @@ export default function SignupPage() {
                 placeholder="Enter your email"
                 required
               />
+            </div>
+
+            <div className="flex flex-1 gap-2">
+              <div className="flex-1">
+                <label htmlFor="first_name" className="text-sm mb-1 block">
+                  First Name
+                </label>
+                <input
+                  type="text"
+                  id="first_name"
+                  className="w-full px-2 py-2 border-2 border-slate-800 text-sm md:text-base rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-slate-400"
+                  placeholder="Enter your first name"
+                  required
+                />
+              </div>
+              <div className="flex-1">
+                <label htmlFor="last_name" className="text-sm mb-1 block">
+                  Email
+                </label>
+                <input
+                  type="text"
+                  id="last_name"
+                  className="w-full px-2 py-2 border-2 border-slate-800 text-sm md:text-base rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-slate-400"
+                  placeholder="Enter your last name"
+                  required
+                />
+              </div>
             </div>
 
             <div className="flex flex-col">
