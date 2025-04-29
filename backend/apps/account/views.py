@@ -2,13 +2,15 @@ from django.db import transaction
 from django.contrib.auth import authenticate
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from .serializer import (
     CustomUserSerializer,
     AuthenticationSerializer,
     RegistrationSerializer,
     ReadingListSerializer,
+    TokenVerificationSerializer,
 )
-from .utils.jwt import sign_as_jwt
+from .utils.jwt import sign_as_jwt, verify_jwt_token
 from .models import CustomUser, ReadingList
 from apps.review.serializer import ReviewSerializer
 from main.utils.generic_api import GenericView
@@ -134,3 +136,27 @@ class RegistrationView(APIView):
         else:
             print(f"User {user.username} Already Exists!")
             return Response({"error": "User already exists"}, status=409)
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, format=None):
+        # In JWT, logout is handled client-side by removing the token
+        # We can add any server-side cleanup here if needed
+        return Response({"message": "Successfully logged out"})
+
+class TokenVerificationView(APIView):
+    def post(self, request, format=None):
+        serializer = TokenVerificationSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
+            
+        token = serializer.validated_data['token']
+        email = serializer.validated_data['email']
+        
+        try:
+            verify_jwt_token(token, email)
+            return Response({"valid": True, "message": "Token is valid"})
+        except Exception as e:
+            return Response({"valid": False, "message": str(e)}, status=401)

@@ -23,3 +23,7 @@ class RegistrationSerializer(serializers.Serializer):
     last_name = serializers.CharField(max_length=512)
     email = serializers.CharField(max_length=512)
     password = serializers.CharField(max_length=512)
+
+class TokenVerificationSerializer(serializers.Serializer):
+    token = serializers.CharField(max_length=2048)
+    email = serializers.EmailField()

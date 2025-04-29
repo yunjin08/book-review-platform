@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from apps.book.models import Book
-
+from django.db.models import Avg
 
 # Create your models here.
 class CustomUser(AbstractUser):
@@ -17,7 +17,6 @@ class CustomUser(AbstractUser):
     - removed: BooleanField to store whether the user is removed or not.
     """
     bio = models.TextField(blank=True)
-    profile_picture = models.CharField(max_length=512)
     profile_picture = models.URLField(blank=True)
     books_read_count = models.PositiveIntegerField(default=0)
     reviews_count = models.PositiveIntegerField(default=0)
