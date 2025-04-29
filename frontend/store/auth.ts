@@ -32,11 +32,11 @@ interface AuthState {
 
 // Registration data interface
 export interface RegisterData {
+    username: string;
+    first_name: string;
+    last_name: string;
     email: string;
-    password1: string;
-    password2: string;
-    is_host?: boolean;
-    avatar_url?: string;
+    password: string;
 }
 
 // Get access token from cookies
