@@ -143,7 +143,10 @@ class RegistrationView(APIView):
             print(f"Google User {user.username} Successfully Created!")
 
             # Generate JWT token
-            payload = {"email": user.email}
+            payload = {
+                "email": user.email,
+                "user_id": user.id
+            }
             try:
                 token = sign_as_jwt(payload)
             except:

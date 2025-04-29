@@ -5,7 +5,7 @@ from django.conf import settings
 from rest_framework import status
 import logging
 from main.settings import JWT_SECRET_KEY
-
+from apps.account.models import CustomUser
 # Get logger instance
 logger = logging.getLogger(__name__)
 
@@ -43,7 +43,7 @@ class IsTokenValidated(BasePermission):
             print(f"payload: {payload}")
             
             # Store the payload in the request for later use
-            request.user_payload = payload
+            request.user = CustomUser.objects.get(id=payload['user_id'])
             logger.info('Token successfully verified')
             
             return True
