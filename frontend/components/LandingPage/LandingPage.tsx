@@ -52,7 +52,9 @@ export default function LandingPage() {
           onSortChange={handleSortChange}
         />
       </div>
-      {renderActiveSection()}
+        <Suspense fallback={<div className="flex justify-center items-center h-screen">Loading...</div>}>
+          {renderActiveSection()}
+        </Suspense>
       <Footer />
     </div>
   );
