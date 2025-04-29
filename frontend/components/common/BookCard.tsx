@@ -100,7 +100,7 @@ export default function BookCard({
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="max-w-md md:max-w-2xl max-h-[85vh] text-black bg-white overflow-hidden flex flex-col">
-          <DialogHeader className="flex-shrink- border-b-2 border-slate-500">
+          <DialogHeader className="flex-shrink border-slate-500">
             <DialogTitle className="text-xl md:text-2xl">{title}</DialogTitle>
             <DialogDescription className="text-sm md:text-base">
               by {author} · {genre}
