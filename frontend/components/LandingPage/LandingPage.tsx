@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, Suspense, lazy } from "react";
 import NavBar from "@/components/common/NavBar";
 import BestRatedSection from "./BestRatedSection";
-import MostReviewedSection from "./MostReviewedSection";
-import MostActiveSection from "./MostActiveReviewers";
 import Footer from "@/components/common/Footer";
 import { Section } from "@/types";
+
+const MostReviewedSection = lazy(() => import("./MostReviewedSection"));
+const MostActiveSection = lazy(() => import("./MostActiveReviewers"));
 
 export default function LandingPage() {
   const [activeSection, setActiveSection] = useState<Section>("mostReviewed");
@@ -29,7 +30,9 @@ export default function LandingPage() {
   return (
     <div className="flex flex-col bg-white text-black w-screen min-h-screen">
       <NavBar activeSection={activeSection} onSectionChange={handleSectionChange}/>
-      {renderActiveSection()}
+      <Suspense fallback={<div>Loading...</div>}>
+        {renderActiveSection()}
+      </Suspense>
       <Footer />
     </div>
   );
