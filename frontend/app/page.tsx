@@ -1,12 +1,12 @@
-"use client";
+'use client'
 
-import LandingPage from "@/components/LandingPage/LandingPage";
-import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import LandingPage from '@/components/LandingPage/LandingPage'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
 
 export default function Home() {
-  return (
-    <ProtectedRoute>
-      <LandingPage />
-    </ProtectedRoute>
-  );
+    return (
+        <ProtectedRoute>
+            <LandingPage />
+        </ProtectedRoute>
+    )
 }

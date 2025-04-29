@@ -1,41 +1,41 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { initApiWithAuth } from "@/lib/api-client";
-import { config } from '@/config';
-import { ApiProvider } from "@/components/auth/ApiProvider";
+import type { Metadata } from 'next'
+import { Geist, Geist_Mono } from 'next/font/google'
+import './globals.css'
+import { ApiProvider } from '@/components/auth/ApiProvider'
+import AuthPersistenceProvider from '@/components/auth/AuthPersistenceProvider'
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+    variable: '--font-geist-sans',
+    subsets: ['latin'],
+})
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+    variable: '--font-geist-mono',
+    subsets: ['latin'],
+})
 
 export const metadata: Metadata = {
-  title: "Library ni Jed",
-  description: "A library management system that allows you to manage your library.",
-};
-
-initApiWithAuth(config.api.baseURL);
+    title: 'Library ni Jed',
+    description:
+        'A library management system that allows you to manage your library.',
+}
 
 export default function RootLayout({
-  children,
+    children,
 }: Readonly<{
-  children: React.ReactNode;
+    children: React.ReactNode
 }>) {
-  return (
-    <html lang="en">
-      <ApiProvider>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-          {children}
-        </body>
-      </ApiProvider>
-    </html>
-  );
+    return (
+        <html lang="en">
+            <ApiProvider>
+                <body
+                    className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+                >
+                    <AuthPersistenceProvider>
+                        {children}
+                    </AuthPersistenceProvider>
+                </body>
+            </ApiProvider>
+        </html>
+    )
 }

@@ -1,21 +1,21 @@
-import React, { useState, Suspense, lazy } from "react";
-import NavBar from "@/components/common/NavBar";
-import BestRatedSection from "./BestRatedSection";
-import Footer from "@/components/common/Footer";
 import FilterControls from "./FilterControls";
 
 type Section = "bookRate" | "activeUsers" | "mostReviewed";
+import React, { useState, lazy } from 'react'
+import NavBar from '@/components/common/NavBar'
+import BestRatedSection from './BestRatedSection'
+import Footer from '@/components/common/Footer'
 
-const MostReviewedSection = lazy(() => import("./MostReviewedSection"));
-const MostActiveSection = lazy(() => import("./MostActiveReviewers"));
+const MostReviewedSection = lazy(() => import('./MostReviewedSection'))
+const MostActiveSection = lazy(() => import('./MostActiveReviewers'))
 
 export default function LandingPage() {
   const [activeSection, setActiveSection] = useState<Section>("mostReviewed");
-  const [sortOption, setSortOption] = useState({
-    bookRate: "highest",
-    activeUsers: "most",
-    mostReviewed: "most",
-  });
+    const [sortOption, setSortOption] = useState({
+        bookRate: 'highest',
+        activeUsers: 'most',
+        mostReviewed: 'most',
+    })
 
   const handleSectionChange = (section: Section) => {
     setActiveSection(section);
@@ -43,7 +43,10 @@ export default function LandingPage() {
 
   return (
     <div className="flex flex-col bg-white text-black w-screen min-h-screen">
-      <NavBar />
+      <NavBar
+        activeSection={activeSection}
+        onSectionChange={handleSectionChange}
+      />
       <div className="md:px-24 xl:px-72 xl:px-24 pt-4 md:pt-8">
         <FilterControls
           activeSection={activeSection}

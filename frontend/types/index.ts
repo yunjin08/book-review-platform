@@ -1,1 +1,1 @@
-export type Section = "bookRate" | "activeUsers" | "mostReviewed";
+export type Section = 'bookRate' | 'activeUsers' | 'mostReviewed'
