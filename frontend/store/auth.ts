@@ -22,7 +22,7 @@ interface AuthState {
     error: Error | null;
 
     // Auth actions
-    login: (email: string, password: string) => Promise<void>;
+    login: (username: string, password: string) => Promise<void>;
     register: (data: RegisterData) => Promise<void>;
     logout: () => Promise<void>;
     verifyToken: (token?: string) => Promise<boolean>;
@@ -75,6 +75,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     error: null,
 
     login: async (username: string, password: string) => {
+        console.log("Login attempt with username:", username, "and password:", password);
         set({ isLoading: true, error: null });
         try {
             const response = await apiClient.post<{ access: string; user: User }>(
@@ -144,6 +145,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             isAuthenticated: false,
             isLoading: false,
         });
+
+        
 
         // Redirect to login page
         if (typeof window !== 'undefined') {

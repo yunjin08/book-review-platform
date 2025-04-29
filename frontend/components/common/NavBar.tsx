@@ -29,13 +29,21 @@ export default function NavBar({
 }) {
   // State to track the selected sort option for each filter
 
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, logout } = useAuthStore();
   const router = useRouter();
   const [sortOption, setSortOption] = useState<SortOptions>({
     bookRate: "highest",
     activeUsers: "most",
     mostReviewed: "most",
   });
+
+  const handleLogout = () => {
+    try {
+      logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   // Handler for filter button clicks
   const handleFilterClick = (filter: Section) => {
@@ -187,7 +195,7 @@ export default function NavBar({
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="cursor-pointer text-red-500"
-                onClick={() => console.log("Logout user")}
+                onClick={handleLogout}
               >
                 Logout
               </DropdownMenuItem></>:<DropdownMenuItem

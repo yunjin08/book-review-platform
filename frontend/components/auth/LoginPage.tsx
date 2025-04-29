@@ -3,14 +3,22 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth";
+import { useRouter } from "next/navigation";
+
 export default function LoginPage() {
   const { login } = useAuthStore();
+  const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLoginButtonClick = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    await login(username, password);
+    try {
+      await login(username, password);
+      router.push('/');
+    } catch (error) {
+      console.error('Login failed:', error);
+    }
   };
 
   return (
