@@ -2,6 +2,16 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Avg
+from django.db.models.signals import post_migrate  # Add this import
+from django.dispatch import receiver
+
+DEFAULT_GENRES = [
+    "Mystery",
+    "Science Fiction",
+    "Fantasy",
+    "Romance",
+    "Historical Fiction",
+]
 
 class Genre(models.Model):
     """Model for book genres"""
@@ -14,6 +24,13 @@ class Genre(models.Model):
         
     def __str__(self):
         return self.name
+# Signal to add default books
+@receiver(post_migrate)
+def create_default_genres(sender, **kwargs):
+    """Create default genres after migration."""
+    if sender.name == 'books':  # Replace 'books' with your app name
+        for genre_name in DEFAULT_GENRES:
+            Genre.objects.get_or_create(name=genre_name)
 
 class Author(models.Model):
     """Model for book authors"""
@@ -31,10 +48,10 @@ class Author(models.Model):
 class Book(models.Model):
     """Model for books"""
     title = models.CharField(max_length=255)
-    authors = models.ManyToManyField(Author, related_name='books')
+    author = models.CharField(max_length=255, default='Anonymous Author')
     genres = models.ManyToManyField(Genre, related_name='books')
     description = models.TextField(blank=True)
-    cover_image = models.URLField(blank=True)
+    cover_image = models.URLField(blank=True, null=True)
     isbn = models.CharField(max_length=13, blank=True)
     publication_date = models.DateField(null=True, blank=True)
     created_by = models.ForeignKey("account.CustomUser", on_delete=models.SET_NULL, null=True, related_name='added_books')

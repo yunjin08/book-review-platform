@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { ApiProvider } from '@/components/auth/ApiProvider'
 import AuthPersistenceProvider from '@/components/auth/AuthPersistenceProvider'
+import { initApiWithAuth } from "@/lib/api-client";
+import { config } from '@/config'
 
 const geistSans = Geist({
     variable: '--font-geist-sans',
@@ -13,6 +15,9 @@ const geistMono = Geist_Mono({
     variable: '--font-geist-mono',
     subsets: ['latin'],
 })
+
+initApiWithAuth(config.api.baseURL);
+
 
 export const metadata: Metadata = {
     title: 'Library ni Jed',

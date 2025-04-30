@@ -1,61 +1,73 @@
 'use client'
+import React, { useState , lazy} from "react";
+import NavBar from "@/components/common/NavBar";
+import BestRatedSection from "./BestRatedSection";
+import MostReviewedSection from "./MostReviewedSection";
+import MostActiveSection from "./MostActiveReviewers";
+import Footer from "@/components/common/Footer";
+import FilterControls from "./FilterControls";
 
-import FilterControls from './FilterControls'
+const AddBookModal = lazy(() => import("../common/AddBookModal"));
 
-type Section = 'bookRate' | 'activeUsers' | 'mostReviewed'
-import React, { useState, lazy } from 'react'
-import NavBar from '@/components/common/NavBar'
-import BestRatedSection from './BestRatedSection'
-import Footer from '@/components/common/Footer'
-
-const MostReviewedSection = lazy(() => import('./MostReviewedSection'))
-const MostActiveSection = lazy(() => import('./MostActiveReviewers'))
+type Section = "bookRate" | "activeUsers" | "mostReviewed";
 
 export default function LandingPage() {
-    const [activeSection, setActiveSection] = useState<Section>('mostReviewed')
-    const [sortOption, setSortOption] = useState({
-        bookRate: 'highest',
-        activeUsers: 'most',
-        mostReviewed: 'most',
-    })
+  const [activeSection, setActiveSection] = useState<Section>("mostReviewed");
+  const [sortOption, setSortOption] = useState({
+    bookRate: "highest",
+    activeUsers: "most",
+    mostReviewed: "most",
+  });
+  const [addBookModalOpen, setAddBookModalOpen] = useState(false); // State for modal visibility
 
-    const handleSectionChange = (section: Section) => {
-        setActiveSection(section)
+  const handleSectionChange = (section: Section) => {
+    setActiveSection(section);
+  };
+
+  const handleSortChange = (value: string) => {
+    setSortOption({
+      ...sortOption,
+      [activeSection]: value,
+    });
+  };
+
+  const handleAddBook = (bookData: any) => {
+    console.log("New book added:", bookData);
+    // Handle book submission logic here
+  };
+
+  const renderActiveSection = () => {
+    switch (activeSection) {
+      case "bookRate":
+        return <BestRatedSection />;
+      case "activeUsers":
+        return <MostActiveSection />;
+      case "mostReviewed":
+        return <MostReviewedSection />;
+      default:
+        return <MostReviewedSection />;
     }
+  }
 
-    const handleSortChange = (value: string) => {
-        setSortOption({
-            ...sortOption,
-            [activeSection]: value,
-        })
-    }
-
-    const renderActiveSection = () => {
-        switch (activeSection) {
-            case 'bookRate':
-                return <BestRatedSection />
-            case 'activeUsers':
-                return <MostActiveSection />
-            case 'mostReviewed':
-                return <MostReviewedSection />
-            default:
-                return <MostReviewedSection />
-        }
-    }
-
-    return (
-        <div className="flex flex-col bg-white text-black w-screen min-h-screen">
-            <NavBar />
-            <div className="md:px-24 xl:px-72 pt-4 md:pt-8">
-                <FilterControls
-                    activeSection={activeSection}
-                    sortOption={sortOption}
-                    onSectionChange={handleSectionChange}
-                    onSortChange={handleSortChange}
-                />
-            </div>
-            {renderActiveSection()}
-            <Footer />
-        </div>
-    )
+  return (
+    <div className="flex flex-col bg-white text-black w-screen min-h-screen">
+      <NavBar />
+      <div className="px-6 md:px-12 xl:px-24 py-4">
+        <FilterControls
+          activeSection={activeSection}
+          sortOption={sortOption}
+          onSectionChange={handleSectionChange}
+          onSortChange={handleSortChange}
+          onAddBookClick={() => setAddBookModalOpen(true)}
+        />
+      </div>
+      {renderActiveSection()}
+      <AddBookModal
+        onSubmit={handleAddBook}
+        open={addBookModalOpen}
+        setOpen={setAddBookModalOpen}
+      />
+      <Footer />
+    </div>
+  );
 }

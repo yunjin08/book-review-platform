@@ -1,6 +1,8 @@
 from main.utils.generic_api import GenericView
-from .models import Book
+from .models import Book, Genre, Author
 from .serializer import BookSerializer, GenreSerializer, AuthorSerializer
+from rest_framework.response import Response
+from rest_framework import status
 
 # Create your views here.
 class BookView(GenericView):
@@ -8,11 +10,11 @@ class BookView(GenericView):
     serializer_class = BookSerializer
 
 class GenreView(GenericView):
-    queryset = Book.objects.all()
+    queryset = Genre.objects.all()
     serializer_class = GenreSerializer
 
-class AuthorSerializer(GenericView):
-    queryset = Book.objects.all()
+class AuthorView(GenericView):
+    queryset = Author.objects.all()
     serializer_class = AuthorSerializer
 
 
