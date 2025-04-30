@@ -12,7 +12,13 @@ class GenreSerializer(serializers.ModelSerializer):
 class BookSerializer(serializers.ModelSerializer):
     cover_image = serializers.URLField(required=False, allow_null=True)
     reviews = ReviewSerializer(many=True, read_only=True)  # Include reviews
-    genres = GenreSerializer(many=True, read_only=True)  # Use GenreSerializer for genres
+    genres = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Genre.objects.all(),
+        write_only=True
+    )
+    genres_detail = GenreSerializer(source='genres', many=True, read_only=True)
+
     class Meta:
         model = Book
         fields = [
@@ -20,6 +26,7 @@ class BookSerializer(serializers.ModelSerializer):
             "title",
             "author",
             "genres",
+            "genres_detail",
             "description",
             "cover_image",
             "isbn",
