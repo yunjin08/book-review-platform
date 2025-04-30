@@ -12,6 +12,7 @@ const STORAGE_KEYS = {
 export interface AuthTokens {
     access: string
     access_expiration?: string
+    email?: string
 }
 
 // Auth state interface for the store
@@ -20,14 +21,16 @@ interface AuthState {
     isAuthenticated: boolean
     isLoading: boolean
     error: Error | null
+    isAPIInitialized: boolean
 
     // Auth actions
     login: (username: string, password: string) => Promise<void>
     register: (data: RegisterData) => Promise<void>
     logout: () => Promise<void>
-    verifyToken: (token?: string) => Promise<boolean>
+    verifyToken: (token?: string, email?: string) => Promise<boolean>
     loadUserFromCookies: () => Promise<void>
     getProfile: (id: string) => Promise<void>
+    setAPIInitialized: () => void
 }
 
 // Registration data interface
@@ -40,17 +43,24 @@ export interface RegisterData {
 }
 
 // Get access token from cookies
-export const getAccessToken = (): string | null => {
+export const getAccessToken = (): {
+    token: string | null
+    email: string | null
+} => {
     const tokens = Cookies.get(STORAGE_KEYS.TOKENS)
     if (tokens) {
         try {
-            return JSON.parse(tokens).access || null
+            const parsed = JSON.parse(tokens)
+            return {
+                token: parsed.access || null,
+                email: parsed.email || null,
+            }
         } catch (e) {
             console.error('Failed to parse tokens cookie', e)
-            return null
+            return { token: null, email: null }
         }
     }
-    return null
+    return { token: null, email: null }
 }
 
 // Save tokens to cookies
@@ -73,6 +83,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     isAuthenticated: false,
     isLoading: false,
     error: null,
+    isAPIInitialized: false,
 
     login: async (username: string, password: string) => {
         console.log(
@@ -84,12 +95,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ isLoading: true, error: null })
         try {
             const response = await apiClient.post<{
-                access: string
+                token: string
                 user: User
             }>('/account/authenticate/', { username, password })
 
             saveTokens({
-                access: response.access,
+                access: response.token,
+                email: response.user.email,
             })
 
             set({
@@ -111,12 +123,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ isLoading: true, error: null })
         try {
             const response = await apiClient.post<{
-                access: string
+                token: string
                 user: User
             }>('/account/registration/', data)
 
             saveTokens({
-                access: response.access,
+                access: response.token,
+                email: response.user.email,
             })
 
             set({
@@ -159,23 +172,30 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
     },
 
-    verifyToken: async (token?: string) => {
-        const tokenToVerify = token || getAccessToken()
-        if (!tokenToVerify) return false
+    verifyToken: async (token?: string, email?: string) => {
+        const { token: storedToken, email: storedEmail } = getAccessToken()
+        const tokenToVerify = token || storedToken
+        const emailToUse = email || storedEmail
+
+        if (!tokenToVerify || !emailToUse) return false
 
         try {
             await apiClient.post('/account/verify-token/', {
                 token: tokenToVerify,
+                email: emailToUse,
             })
+            console.log('Token verified successfully')
             return true
         } catch {
             return false
         }
     },
 
-    getProfile: async (id: string) => {
+    getProfile: async () => {
         try {
-            const response = await apiClient.get<User>(`/account/users/${id}/`)
+            const response = await apiClient.get<User>(
+                `/account/users/profile/`
+            )
             set({ user: response })
         } catch (error) {
             console.error('AuthStore: Failed to get profile', error)
@@ -183,21 +203,34 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     },
 
     loadUserFromCookies: async () => {
-        const accessToken = getAccessToken()
-        if (!accessToken) return
+        const { token: accessToken, email } = getAccessToken()
+        console.log(
+            'Loading user from cookies with token:',
+            accessToken,
+            'and email:',
+            email
+        )
+        if (!accessToken || !email) return
 
         set({ isLoading: true })
         try {
             // Verify the token is valid
-            const isValid = await get().verifyToken(accessToken)
-            set({ isAuthenticated: isValid, isLoading: false })
+            console.log('Verifying token:', accessToken, 'and email:', email)
+            const isValid = await get().verifyToken(accessToken, email)
+            console.log('Token verification result:', isValid)
+            set({ isAuthenticated: isValid })
         } catch (error) {
             console.error('AuthStore: Failed to load user from cookies', error)
             set({
                 isAuthenticated: false,
-                isLoading: false,
             })
         }
+
+        set({ isLoading: false })
+    },
+
+    setAPIInitialized: () => {
+        set({ isAPIInitialized: true })
     },
 }))
 
