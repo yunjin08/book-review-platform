@@ -1,4 +1,3 @@
-from django.db import transaction
 from django.contrib.auth import authenticate
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -15,6 +14,8 @@ from .models import CustomUser, ReadingList
 from apps.review.serializer import ReviewSerializer
 from main.utils.generic_api import GenericView
 from rest_framework.decorators import action
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from jwt.exceptions import InvalidTokenError, ExpiredSignatureError
 
 
 class UserView(GenericView):
@@ -88,19 +89,16 @@ class AuthenticationView(APIView):
         user = authenticate(username=username, password=password)
 
         if user is not None:
-            payload = {
-                "email": user.email,
-                "user_id": user.id
-            }
-
-            try:
-                token = sign_as_jwt(payload)
-            except:
-                return Response({"error": "Failed JWT Signing"}, status=500)
+            refresh = RefreshToken.for_user(user)
+            token = str(refresh.access_token)
 
             user_serializer = CustomUserSerializer(user)
 
-            return Response({"token": token, "user": user_serializer.data})
+            return Response({
+                "token": token, 
+                "refresh": str(refresh),
+                "user": user_serializer.data
+            })
 
         else:
             print("Failed Authentication")
@@ -142,21 +140,16 @@ class RegistrationView(APIView):
 
             print(f"Google User {user.username} Successfully Created!")
 
-            # Generate JWT token
-            payload = {
-                "email": user.email,
-                "user_id": user.id
-            }
-            try:
-                token = sign_as_jwt(payload)
-            except:
-                return Response({"error": "Failed JWT Signing"}, status=500)
+            # Generate JWT token using SimpleJWT
+            refresh = RefreshToken.for_user(user)
+            token = str(refresh.access_token)
 
             # Serialize user data
             user_serializer = CustomUserSerializer(user)
 
             return Response({
                 "token": token,
+                "refresh": str(refresh),
                 "user": user_serializer.data
             })
         else:
@@ -179,10 +172,15 @@ class TokenVerificationView(APIView):
             return Response(serializer.errors, status=400)
             
         token = serializer.validated_data['token']
-        email = serializer.validated_data['email']
         
         try:
-            verify_jwt_token(token, email)
+            # Use SimpleJWT for verification
+            access_token = AccessToken(token)
+            # Token is valid if no exception is raised
             return Response({"valid": True, "message": "Token is valid"})
+        except ExpiredSignatureError:
+            return Response({"valid": False, "message": "Token has expired"}, status=401)
+        except InvalidTokenError as e:
+            return Response({"valid": False, "message": f"Invalid token: {str(e)}"}, status=401)
         except Exception as e:
             return Response({"valid": False, "message": str(e)}, status=401)

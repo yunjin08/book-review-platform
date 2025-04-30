@@ -26,4 +26,3 @@ class RegistrationSerializer(serializers.Serializer):
 
 class TokenVerificationSerializer(serializers.Serializer):
     token = serializers.CharField(max_length=2048)
-    email = serializers.EmailField()

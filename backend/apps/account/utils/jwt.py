@@ -26,7 +26,7 @@ def sign_as_jwt(payload, algorithm="HS256"):
 def verify_jwt_token(token: str, email: str, algorithm="HS256"):
     load_dotenv()
 
-    jwt_secret_key = os.getenv("JWT_SECRET_KEY")
+    jwt_secret_key = JWT_SECRET_KEY
 
     try:
         payload = decode(token, jwt_secret_key, algorithms=[algorithm])

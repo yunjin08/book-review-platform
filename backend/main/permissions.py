@@ -1,10 +1,10 @@
 from rest_framework.permissions import BasePermission
 from rest_framework.exceptions import AuthenticationFailed
-import jwt
+from rest_framework_simplejwt.tokens import AccessToken
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 from django.conf import settings
 from rest_framework import status
 import logging
-from main.settings import JWT_SECRET_KEY
 from apps.account.models import CustomUser
 # Get logger instance
 logger = logging.getLogger(__name__)
@@ -30,31 +30,25 @@ class IsTokenValidated(BasePermission):
             token = auth_header.split(' ')[1]
             logger.debug('Attempting to verify token')
             
-            print(f"token: {token}")
-            print(f"settings.SECRET_KEY: {settings.SECRET_KEY}")
+            # Verify the token using SimpleJWT
+            access_token = AccessToken(token)
+            payload = access_token.payload
             
-            # Verify the token
-            payload = jwt.decode(
-                token,
-                JWT_SECRET_KEY,
-                algorithms=['HS256']
-            )
+            logger.debug(f"payload: {payload}")
             
-            print(f"payload: {payload}")
-            
-            # Store the payload in the request for later use
+            # Store the user in the request for later use
             request.user = CustomUser.objects.get(id=payload['user_id'])
             logger.info('Token successfully verified')
             
             return True
             
-        except jwt.ExpiredSignatureError:
+        except ExpiredSignatureError:
             logger.warning('Token has expired')
             raise AuthenticationFailed(
                 'Token has expired',
                 code=status.HTTP_401_UNAUTHORIZED
             )
-        except jwt.InvalidTokenError:
+        except InvalidTokenError:
             logger.warning('Invalid token provided')
             raise AuthenticationFailed(
                 'Invalid token',
