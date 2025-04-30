@@ -3,10 +3,12 @@ from rest_framework import serializers
 
 
 class BookSerializer(serializers.ModelSerializer):
+    cover_image = serializers.URLField(required=False, allow_null=True)
     class Meta:
         model = Book
         fields = "__all__"
-        read_only_fields = ["created_at"]
+        read_only_fields = ["created_at", "created_by"]
+
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:

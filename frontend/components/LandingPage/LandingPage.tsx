@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useState , lazy} from "react";
 import NavBar from "@/components/common/NavBar";
 import BestRatedSection from "./BestRatedSection";
 import MostReviewedSection from "./MostReviewedSection";
 import MostActiveSection from "./MostActiveReviewers";
 import Footer from "@/components/common/Footer";
 import FilterControls from "./FilterControls";
-import AddBookModal from "../common/AddBookModal";
+
+const AddBookModal = lazy(() => import("../common/AddBookModal"));
 
 type Section = "bookRate" | "activeUsers" | "mostReviewed";
 
