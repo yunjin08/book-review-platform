@@ -111,7 +111,7 @@ export default function BookCard({
             <div className="grid grid-cols-3 gap-4 my-4 border-2 border-slate-500 p-2 rounded-sm">
               <div className="col-span-1">
                 <div className="relative w-full" style={{ paddingBottom: "150%" }}>
-                  <Image
+                  <img
                     src={coverUrl}
                     alt={title}
                     layout="fill"
