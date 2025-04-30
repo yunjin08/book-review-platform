@@ -1,4 +1,3 @@
-// 1. Update the imports to include Select component
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
@@ -14,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -26,7 +24,7 @@ interface BookFormData {
   author: string;
   genres: string | string[];
   description?: string;
-  cover_image?: File | string;
+  cover_image?: string;
   isbn?: string;
   publication_date?: string;
 }
@@ -37,7 +35,7 @@ interface AddBookModalProps {
   setOpen: (open: boolean) => void;
 }
 
-// 3. Add a Genre interface to type the genre data
+// Genre interface to type the genre data
 interface Genre {
   id: number;
   name: string;
@@ -48,7 +46,6 @@ export default function AddBookModal({
   open,
   setOpen,
 }: AddBookModalProps) {
-  // 4. Update the genre state to be properly typed
   const [genres, setGenres] = useState<Genre[]>([]);
 
   const [formData, setFormData] = useState({
@@ -56,7 +53,7 @@ export default function AddBookModal({
     author: '',
     genres: '',
     description: "",
-    cover_image: null as File | null,
+    cover_image: "", // Changed to string for URL
     isbn: "",
     publication_date: "",
   });
@@ -67,7 +64,7 @@ export default function AddBookModal({
       author: '',
       genres: '',
       description: "",
-      cover_image: null,
+      cover_image: "", // Reset to empty string
       isbn: "",
       publication_date: "",
     });
@@ -99,22 +96,11 @@ export default function AddBookModal({
     });
   };
 
-  // 5. Add a handler for the genre select change
   const handleGenreChange = (value: string) => {
     setFormData({
       ...formData,
       genres: value,
     });
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const file = e.target.files[0];
-      setFormData({
-        ...formData,
-        cover_image: file,
-      });
-    }
   };
 
   const handleFormSubmit = () => {
@@ -130,7 +116,6 @@ export default function AddBookModal({
     setOpen(false); // Triggers useEffect to reset form
   };
 
-  // 6. Replace the genres input with a select dropdown in the JSX
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-md max-h-[90vh] bg-white text-black overflow-y-auto">
@@ -139,7 +124,6 @@ export default function AddBookModal({
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
-          {/* Other form fields remain the same */}
           <div className="grid gap-2">
             <Label htmlFor="title">Title</Label>
             <Input
@@ -181,6 +165,7 @@ export default function AddBookModal({
           <div className="grid gap-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
+              required
               name="description"
               placeholder="Enter description"
               value={formData.description}
@@ -198,47 +183,39 @@ export default function AddBookModal({
           <div className="grid gap-2">
             <Label htmlFor="publication_date">Publication Date</Label>
             <Input
+              required
               type="date"
               name="publication_date"
               value={formData.publication_date}
               onChange={handleChange}
             />
           </div>
-        </div>
 
-        {/* Cover image section remains the same */}
-        <div className="grid gap-2">
-          <Label htmlFor="cover_image">Cover Image</Label>
-
-          <div>
-            <label
-              htmlFor="cover_image"
-              className="cursor-pointer inline-block px-4 py-2 bg-gray-100 hover:bg-gray-200 text-sm font-medium text-gray-700 rounded-md border border-slate-800"
-            >
-              Choose Image
-            </label>
-            <input
-              id="cover_image"
+          {/* Cover image URL input */}
+          <div className="grid gap-2">
+            <Label htmlFor="cover_image">Cover Image URL</Label>
+            <Input
               name="cover_image"
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="hidden"
+              value={formData.cover_image}
+              placeholder="Enter image URL"
+              onChange={handleChange}
             />
+            {formData.cover_image && (
+              <div className="mt-2">
+                <p className="text-sm text-gray-500">Preview:</p>
+                <img
+                  src={formData.cover_image}
+                  alt="Cover preview"
+                  className="mt-1 w-32 h-32 object-cover rounded-md border"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = "/placeholder-image.jpg"; // Replace with your placeholder image path
+                    target.alt = "Image URL error";
+                  }}
+                />
+              </div>
+            )}
           </div>
-
-          {formData.cover_image && (
-            <div className="mt-2">
-              <p className="text-sm text-gray-500">Preview:</p>
-              <Image
-                src={URL.createObjectURL(formData.cover_image)}
-                alt="Preview"
-                className="mt-1 w-32 h-32 object-cover rounded-md border"
-                width={30}
-                height={30}
-              />
-            </div>
-          )}
         </div>
 
         <DialogFooter>
