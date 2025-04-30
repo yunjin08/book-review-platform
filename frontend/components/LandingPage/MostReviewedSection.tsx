@@ -1,4 +1,6 @@
-import React, { lazy } from "react";
+'use client'
+import React, { useEffect, lazy, useState } from "react";
+import { getBooks } from "@/services/book";
 
 const BookCard = lazy(() => import("../common/BookCard"));
 
@@ -56,7 +58,15 @@ const books: Book[] = [
   },
 ];
 
+
 export default function MostReviewedSection() {
+  const [realBooks, realSetBooks] = useState ([]);
+  useEffect(() => {
+    getBooks({}).then((result) => {
+      console.log(result.objects, 'books')
+      realSetBooks(result.objects);
+    })
+  }, []);
   return (
     <div className="flex flex-col w-full text-black px-3 md:px-24 xl:px-72 pt-4 md:pt-8 pb-8 md:pb-16">
       <p className="text-2xl md:text-4xl font-bold mb-4">Most Reviewed Books</p>
