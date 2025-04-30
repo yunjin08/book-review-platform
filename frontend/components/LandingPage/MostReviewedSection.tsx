@@ -8,7 +8,7 @@ const BookCard = lazy(() => import('../common/BookCard'))
 interface Book {
     title: string
     author: string
-    genres: Array<{ name: string }>
+    genres_detail: { id: number; name: string }[]
     rating: number
     coverUrl: string
 }
@@ -31,6 +31,7 @@ export default function MostReviewedSection() {
         setIsLoading(true)
         getBooks({})
             .then((result) => {
+                console.log(result.objects, 'books')
                 setBooks(result.objects)
             })
             .catch((err) => {
@@ -84,11 +85,7 @@ export default function MostReviewedSection() {
                                 key={index}
                                 title={book.title}
                                 author={book.author}
-                                genre={
-                                    book.genres && book.genres.length > 0
-                                        ? book.genres[0].name
-                                        : 'Unknown'
-                                }
+                                genres={book.genres_detail || []}
                                 rating={book.rating || 0}
                                 coverUrl={book.coverUrl || '/logo.png'}
                             />
