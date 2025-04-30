@@ -44,11 +44,11 @@ export default function MostReviewedSection() {
       </p>
 
       {isLoading ? (
-        <div className="w-full text-center py-12">
+        <div className="w-full text-center py-64">
           <p className="text-lg">Loading books...</p>
         </div>
       ) : error ? (
-        <div className="w-full text-center py-12">
+        <div className="w-full text-center py-64">
           <p className="text-lg text-red-500">{error}</p>
         </div>
       ) : books.length === 0 ? (
