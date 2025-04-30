@@ -2,7 +2,7 @@
 import React, { useEffect, lazy, useState, Suspense } from "react";
 import { getBooks } from "@/services/book";
 
-const BookCard = lazy(() => import("../common/BookCard"));
+const BookCard = lazy(() => import('../common/BookCard'))
 
 interface Book {
   title: string;
@@ -34,7 +34,7 @@ export default function MostReviewedSection() {
 
   return (
     <div className="flex flex-col w-full text-black px-3 md:px-24 xl:px-72 pt-4 md:pt-8 pb-8 md:pb-16">
-      <p className="text-2xl md:text-4xl font-bold mb-4">Most Reviewed Books</p>
+    <p className="text-2xl md:text-4xl font-bold mb-4">Most Reviewed Books</p>
       <p className="text-xs md:text-lg text-justify mb-4">
         These are the books that everyone's had something to say about:
         the ones sparking conversations, inspiring debates, or... getting people

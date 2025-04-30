@@ -9,7 +9,8 @@ import {
 } from 'react'
 import { initApiWithAuth } from '@/lib/api-client'
 import { initializeAuth } from '@/store/auth'
-import { config } from '@/config';
+import { config } from '@/config'
+
 type ApiContextType = {
     isInitialized: boolean
     error: Error | null
@@ -29,9 +30,7 @@ export function ApiProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         try {
             // Get API URL from environment variable or use a default
-            const apiBaseUrl =
-                config.api.baseURL
-
+            const apiBaseUrl = config.api.baseURL
             // Initialize the API client
             initApiWithAuth(apiBaseUrl)
             setState({ isInitialized: true, error: null })

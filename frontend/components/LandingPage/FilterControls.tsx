@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react'
 import {
   Select,
   SelectContent,
@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { FaBook, FaPlus } from "react-icons/fa";
 
-type Section = "bookRate" | "activeUsers" | "mostReviewed";
+type Section = 'bookRate' | 'activeUsers' | 'mostReviewed'
 
 interface FilterControlsProps {
   activeSection: Section;
@@ -26,27 +26,27 @@ export default function FilterControls({
   onSortChange,
   onAddBookClick,
 }: FilterControlsProps) {
-  const getDropdownOptions = () => {
-    switch (activeSection) {
-      case "bookRate":
-        return [
-          { value: "highest", label: "Highest Rated" },
-          { value: "lowest", label: "Lowest Rated" },
-        ];
-      case "activeUsers":
-        return [
-          { value: "most", label: "Most Active" },
-          { value: "least", label: "Least Active" },
-        ];
-      case "mostReviewed":
-        return [
-          { value: "most", label: "Most Reviews" },
-          { value: "least", label: "Least Reviews" },
-        ];
-      default:
-        return [];
+    const getDropdownOptions = () => {
+        switch (activeSection) {
+            case 'bookRate':
+                return [
+                    { value: 'highest', label: 'Highest Rated' },
+                    { value: 'lowest', label: 'Lowest Rated' },
+                ]
+            case 'activeUsers':
+                return [
+                    { value: 'most', label: 'Most Active' },
+                    { value: 'least', label: 'Least Active' },
+                ]
+            case 'mostReviewed':
+                return [
+                    { value: 'most', label: 'Most Reviews' },
+                    { value: 'least', label: 'Least Reviews' },
+                ]
+            default:
+                return []
+        }
     }
-  };
 
   return (
     <div className="flex flex-col md:flex-row items-center justify-between px-3 md:px-24 xl:px-48 gap-2 md:gap-4">

@@ -1,8 +1,8 @@
-import React from "react";
-import SignupPage from "@/components/auth/SignupPage";
+import React from 'react'
+import SignupPage from '@/components/auth/SignupPage'
 
 function page() {
-  return <SignupPage />;
+    return <SignupPage />
 }
 
-export default page;
+export default page

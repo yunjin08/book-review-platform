@@ -1,3 +1,4 @@
+'use client'
 import React, { useState , lazy} from "react";
 import NavBar from "@/components/common/NavBar";
 import BestRatedSection from "./BestRatedSection";
@@ -46,7 +47,7 @@ export default function LandingPage() {
       default:
         return <MostReviewedSection />;
     }
-  };
+  }
 
   return (
     <div className="flex flex-col bg-white text-black w-screen min-h-screen">
