@@ -50,7 +50,7 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="flex flex-col bg-white text-black w-screen min-h-screen">
+    <div className="flex flex-col bg-white text-black w-screen min-h-screen overflow-x-hidden">
       <NavBar />
       <div className="px-6 md:px-12 xl:px-24 py-4">
         <FilterControls
