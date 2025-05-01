@@ -79,7 +79,6 @@ export default function MostReviewedSection() {
                 </div>
             ) : (
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 w-full">
-                    <Suspense fallback={<div>Loading book cards...</div>}>
                         {books.map((book: Book, index: number) => (
                             <BookCard
                                 key={index}
@@ -90,7 +89,6 @@ export default function MostReviewedSection() {
                                 coverUrl={book.coverUrl || '/logo.png'}
                             />
                         ))}
-                    </Suspense>
                 </div>
             )}
         </div>
