@@ -2,6 +2,7 @@
 import React, { useEffect, lazy, useState, Suspense } from 'react'
 import { getBooks } from '@/services/book'
 import { initApiClient } from '@/lib/api'
+import { getAccessToken } from '@/store/auth'
 
 const BookCard = lazy(() => import('../common/BookCard'))
 
@@ -19,11 +20,17 @@ export default function MostReviewedSection() {
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
+        const accessToken = getAccessToken()
+        console.log('Access Token:', accessToken)
         initApiClient({
             baseURL:
                 process.env.NEXT_PUBLIC_API_BASE_URL ||
                 'http://localhost:8000/api/v1/',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken.token}`
+            },
+            
         })
     }, [])
 
