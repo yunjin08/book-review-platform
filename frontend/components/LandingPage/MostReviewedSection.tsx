@@ -4,12 +4,13 @@ import { getBooks } from '@/services/book'
 import { initApiClient } from '@/lib/api'
 import { getAccessToken } from '@/store/auth'
 import { useAuthStore } from '@/store/auth'
-import { Button } from "@/components/ui/button";
-import { FaBook, FaPlus } from "react-icons/fa";
+import { Button } from '@/components/ui/button'
+import { FaBook, FaPlus } from 'react-icons/fa'
 
 const BookCard = lazy(() => import('../common/BookCard'))
 
 interface Book {
+    id: number
     title: string
     author: string
     genres_detail: { id: number; name: string }[]
@@ -17,7 +18,11 @@ interface Book {
     coverUrl: string
 }
 
-export default function MostReviewedSection({ onAddBookClick }: { onAddBookClick: () => void }) {
+export default function MostReviewedSection({
+    onAddBookClick,
+}: {
+    onAddBookClick: () => void
+}) {
     const { isAuthenticated } = useAuthStore()
     const [books, setBooks] = useState<Book[]>([])
     const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -25,7 +30,9 @@ export default function MostReviewedSection({ onAddBookClick }: { onAddBookClick
 
     useEffect(() => {
         if (!isAuthenticated) {
-            console.error('User is not authenticated or access token is missing')
+            console.error(
+                'User is not authenticated or access token is missing'
+            )
             return
         }
         const accessToken = getAccessToken()
@@ -34,11 +41,10 @@ export default function MostReviewedSection({ onAddBookClick }: { onAddBookClick
             baseURL:
                 process.env.NEXT_PUBLIC_API_BASE_URL ||
                 'http://localhost:8000/api/v1/',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${accessToken.token}`
+                Authorization: `Bearer ${accessToken.token}`,
             },
-            
         })
     }, [])
 
@@ -46,6 +52,7 @@ export default function MostReviewedSection({ onAddBookClick }: { onAddBookClick
         setIsLoading(true)
         getBooks({})
             .then((result) => {
+                console.log('Fetched books:', result.objects)
                 setBooks(result.objects)
             })
             .catch((err) => {
@@ -86,10 +93,10 @@ export default function MostReviewedSection({ onAddBookClick }: { onAddBookClick
                     </p>
                     <Button
                         className="bg-slate-800 text-white hover:bg-slate-700 text-xs md:text-sm cursor-pointer"
-                        onClick={()=>{
+                        onClick={() => {
                             onAddBookClick()
                         }} // Trigger modal
-                        >
+                    >
                         <FaBook className="w-3 h-3 md:w-4 md:h-4" />
                         <span>Add Book</span>
                         <FaPlus className="ml-3 w-2 h-2 md:w-3 md:h-3" />
@@ -97,16 +104,17 @@ export default function MostReviewedSection({ onAddBookClick }: { onAddBookClick
                 </div>
             ) : (
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 w-full">
-                        {books.map((book: Book, index: number) => (
-                            <BookCard
-                                key={index}
-                                title={book.title}
-                                author={book.author}
-                                genres={book.genres_detail || []}
-                                rating={book.rating || 0}
-                                coverUrl={book.coverUrl || '/logo.png'}
-                            />
-                        ))}
+                    {books.map((book: Book, index: number) => (
+                        <BookCard
+                            key={index}
+                            bookId={book.id}
+                            title={book.title}
+                            author={book.author}
+                            genres={book.genres_detail || []}
+                            rating={book.rating || 0}
+                            coverUrl={book.coverUrl || '/logo.png'}
+                        />
+                    ))}
                 </div>
             )}
         </div>

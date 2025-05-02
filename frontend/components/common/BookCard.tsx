@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { FaStar } from 'react-icons/fa'
 import {
@@ -13,8 +13,10 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
+import { apiClient } from '@/lib/api'
 
 interface BookCardProps {
+    bookId: number
     title: string
     author: string
     genres: { id: number; name: string }[]
@@ -23,6 +25,7 @@ interface BookCardProps {
 }
 
 export default function BookCard({
+    bookId,
     title,
     author,
     genres,
@@ -37,6 +40,10 @@ export default function BookCard({
     const [hoverRating, setHoverRating] = useState(0)
     // State for review text
     const [reviewText, setReviewText] = useState('')
+
+    const [reviews, setReviews] = useState<
+        { user: string; rating: number; body: string }[]
+    >([])
 
     // Mock reviews for demonstration
     const mockReviews = [
@@ -67,32 +74,62 @@ export default function BookCard({
         },
     ]
 
-    const checkBitch = () => {
-        console.log('genre check!!: ', genres)
-    }
+    useEffect(() => {
+        if (isModalOpen) {
+            console.log('BookID:', bookId)
+            const fetchReviews = async () => {
+                try {
+                    const response = await apiClient.get(
+                        `/review/reviews/?book_id=${bookId}`
+                    )
+                    const mappedReviews = response.objects.map(
+                        (review: any) => ({
+                            user: review.user.username, // extract username
+                            rating: review.rating,
+                            body: review.body,
+                        })
+                    )
+
+                    console.log('Fetched reviews:', mappedReviews)
+                    setReviews(mappedReviews)
+                } catch (error) {
+                    console.error('Error fetching reviews:', error)
+                }
+            }
+
+            fetchReviews()
+        }
+    }, [isModalOpen, bookId])
 
     const handleStarClick = (rating: number) => {
         setNewRating(rating)
     }
 
-    const handleSubmitReview = () => {
-        console.log('Review submitted:', {
-            rating: newRating,
-            comment: reviewText,
-        })
-        // Here you would typically send the review to your backend
-        // After successful submission, you might want to:
-        setReviewText('')
-        setNewRating(0)
-        // Optionally close the modal or show a confirmation
-        // setIsModalOpen(false);
+    const handleSubmitReview = async () => {
+        try {
+            const response = await apiClient.post('/review/reviews/', {
+                book: bookId,
+                rating: newRating,
+                body: reviewText,
+            })
+
+            console.log('Review submitted successfully:', response)
+
+            // Reset the form and optionally close the modal
+            setReviewText('')
+            setNewRating(0)
+            setIsModalOpen(false)
+        } catch (error) {
+            console.error('Error submitting review:', error)
+            alert('Failed to submit review. Please try again.')
+        }
     }
 
     return (
         <>
             <div
                 className="flex flex-col bg-white rounded-lg shadow-md pb-2 md:p-4 hover:scale-105 transition-transform cursor-pointer"
-                onClick={() => checkBitch()}
+                onClick={() => setIsModalOpen(true)}
             >
                 <div
                     className="relative w-full"
@@ -182,7 +219,7 @@ export default function BookCard({
                         <div>
                             <h3 className="text-lg font-bold mb-2">Reviews</h3>
                             <div className="space-y-4">
-                                {mockReviews.map((review, index) => (
+                                {reviews.map((review, index) => (
                                     <Card
                                         key={index}
                                         className="p-2 border-slate-500"
@@ -209,7 +246,7 @@ export default function BookCard({
                                                 </div>
                                             </div>
                                             <p className="text-sm text-gray-700">
-                                                {review.comment}
+                                                {review.body}
                                             </p>
                                         </CardContent>
                                     </Card>
