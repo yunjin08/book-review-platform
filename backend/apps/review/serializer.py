@@ -17,6 +17,10 @@ class ReviewSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ['user', 'created_at', 'updated_at', 'comments']
     
+    def pre_create(self, request):
+    # Automatically associate reviews with the requesting user
+        request.data['user'] = request.user.id
+
     def get_average_rating(self, obj):
         return obj.book.average_rating
     
