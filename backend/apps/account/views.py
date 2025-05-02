@@ -2,6 +2,8 @@ from django.contrib.auth import authenticate
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from main.permissions import IsTokenValidated
+
+from rest_framework.permissions import AllowAny
 from .serializer import (
     CustomUserSerializer,
     AuthenticationSerializer,
@@ -73,6 +75,7 @@ class ReadingListView(GenericView):
         return queryset
 
 class AuthenticationView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request, format=None):
         request_serializer = AuthenticationSerializer(data=request.data)
 
@@ -108,6 +111,7 @@ class AuthenticationView(APIView):
 
 
 class RegistrationView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request, format=None):
         request_serializer = RegistrationSerializer(data=request.data)
 
@@ -165,6 +169,7 @@ class LogoutView(APIView):
         return Response({"message": "Successfully logged out"})
 
 class TokenVerificationView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request, format=None):
         serializer = TokenVerificationSerializer(data=request.data)
         
