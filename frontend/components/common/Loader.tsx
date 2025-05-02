@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 
 interface LoaderProps {
     children?: ReactNode
@@ -6,6 +6,17 @@ interface LoaderProps {
 }
 
 export default function Loader({ children, isLoading }: LoaderProps) {
+    const [isClient, setIsClient] = useState(false)
+
+    useEffect(() => {
+        setIsClient(true) // Ensure this runs only on the client
+    }, [])
+
+    if (!isClient) {
+        // During SSR, render only the children to avoid mismatches
+        return <>{children}</>
+    }
+
     if (!isLoading) {
         return <>{children}</>
     }

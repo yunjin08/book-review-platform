@@ -12,27 +12,30 @@ interface PropsInterface {
 
 const AuthPersistenceProvider = (props: PropsInterface) => {
     const { children } = props
-    const { isAuthenticated, isLoading, isAPIInitialized } = useAuthStore()
+    const { isAuthenticated, isLoading, isAPIInitialized, setAPIInitialized } = useAuthStore()
     const router = useRouter()
 
     useEffect(() => {
         // Initialize auth on component mount
         const init = async () => {
+            setAPIInitialized()
             await initializeAuth()
         }
-
         init()
     }, [])
 
-    // Only redirect if we've checked auth and user is not authenticated
     useEffect(() => {
         if (isAPIInitialized && !isLoading && !isAuthenticated) {
-            // TODO: Comment this out when testing UI without auth
             router.push('/login')
         }
     }, [isAPIInitialized, isAuthenticated, isLoading, router])
 
-    return <Loader isLoading={isLoading}>{children}</Loader>
+    // Block rendering until auth state is resolved
+    if (!isAPIInitialized || isLoading) {
+        return <Loader isLoading={true} /> // Show loader while resolving auth
+    }
+
+    return <>{children}</>
 }
 
 export default AuthPersistenceProvider

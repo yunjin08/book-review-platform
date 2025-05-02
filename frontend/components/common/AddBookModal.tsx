@@ -113,7 +113,7 @@ export default function AddBookModal({
 
     console.log("Submitting from modal:", parsedData, result);
     onSubmit(parsedData);
-    setOpen(false); // Triggers useEffect to reset form
+    // setOpen(false);
   };
 
   return (

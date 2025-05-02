@@ -50,7 +50,7 @@ export default function AnimatedBookBackground() {
             const width = Math.floor(Math.random() * 10) + 2
             const height = Math.floor(Math.random() * 15) + 12
             const color = colors[Math.floor(Math.random() * colors.length)]
-            const delay = Math.random() * 5
+            const delay = Math.random() * 2
             const rotate = Math.random() * 6 - 3
 
             booksArray.push({
@@ -73,7 +73,7 @@ export default function AnimatedBookBackground() {
             y: [-5, 5],
             transition: {
                 y: {
-                    duration: 2,
+                    duration: 1.5,
                     repeat: Infinity,
                     repeatType: 'reverse',
                     ease: 'easeInOut',
@@ -115,7 +115,7 @@ export default function AnimatedBookBackground() {
                     }}
                     transition={{
                         delay: book.delay,
-                        duration: 1.5,
+                        duration: 0.5,
                     }}
                     variants={floatingBookVariants}
                     whileInView="hover"
