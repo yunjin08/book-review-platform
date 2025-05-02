@@ -14,6 +14,17 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
 import { apiClient } from '@/lib/api'
+import { FaEdit } from 'react-icons/fa' // Edit icon
+import { MdDelete } from 'react-icons/md' // Delete icon
+
+interface Review {
+    id: number
+    user: {
+        username: string
+    }
+    rating: number
+    body: string
+}
 
 interface BookCardProps {
     bookId: number
@@ -42,37 +53,8 @@ export default function BookCard({
     const [reviewText, setReviewText] = useState('')
 
     const [reviews, setReviews] = useState<
-        { user: string; rating: number; body: string }[]
+        { id: number; user: string; rating: number; body: string }[]
     >([])
-
-    // Mock reviews for demonstration
-    const mockReviews = [
-        {
-            user: 'Jane Doe',
-            rating: 4,
-            comment: 'Great read, highly recommend it!',
-        },
-        {
-            user: 'John Smith',
-            rating: 5,
-            comment: 'One of my all-time favorites.',
-        },
-        {
-            user: 'Alex Johnson',
-            rating: 3,
-            comment: 'Decent story, but a bit slow in the middle.',
-        },
-        {
-            user: 'Sarah Williams',
-            rating: 4,
-            comment: 'The character development was excellent.',
-        },
-        {
-            user: 'Mike Brown',
-            rating: 5,
-            comment: "Couldn't put it down. A masterpiece!",
-        },
-    ]
 
     useEffect(() => {
         if (isModalOpen) {
@@ -82,9 +64,11 @@ export default function BookCard({
                     const response = await apiClient.get(
                         `/review/reviews/?book_id=${bookId}`
                     )
+
                     const mappedReviews = response.objects.map(
-                        (review: any) => ({
-                            user: review.user.username, // extract username
+                        (review: Review) => ({
+                            id: review.id,
+                            user: review.user.username,
                             rating: review.rating,
                             body: review.body,
                         })
@@ -122,6 +106,19 @@ export default function BookCard({
         } catch (error) {
             console.error('Error submitting review:', error)
             alert('Failed to submit review. Please try again.')
+        }
+    }
+
+    const handleDeleteReview = async (reviewId: number) => {
+        try {
+            await apiClient.delete(`/review/reviews/${reviewId}/`)
+            setReviews((prevReviews) =>
+                prevReviews.filter((review) => review.id !== reviewId)
+            )
+            console.log('Review deleted successfully')
+        } catch (error) {
+            console.error('Error deleting review:', error)
+            alert('Failed to delete review. Please try again.')
         }
     }
 
@@ -222,30 +219,52 @@ export default function BookCard({
                                 {reviews.map((review, index) => (
                                     <Card
                                         key={index}
-                                        className="p-2 border-slate-500"
+                                        className="p-3 border-slate-500 hover:bg-slate-100"
                                     >
-                                        <CardContent className="p-0 pt-2">
-                                            <div className="flex justify-between items-center mb-1">
+                                        <CardContent className="p-0">
+                                            <div className="flex flex-col md:flex-row justify-between items-center mb-1">
                                                 <span className="font-medium">
-                                                    {review.user}
+                                                    <b>{review.user}</b>
                                                 </span>
-                                                <div className="flex">
-                                                    {[...Array(5)].map(
-                                                        (_, i) => (
-                                                            <FaStar
-                                                                key={i}
-                                                                className={`h-4 w-4 ${
-                                                                    i <
-                                                                    review.rating
-                                                                        ? 'text-yellow-400'
-                                                                        : 'text-gray-300'
-                                                                }`}
-                                                            />
-                                                        )
-                                                    )}
+                                                <div className="flex items-end">
+                                                    <div className="flex px-3 mr-3 border-r-2 border-slate-400">
+                                                        {[...Array(5)].map(
+                                                            (_, i) => (
+                                                                <FaStar
+                                                                    key={i}
+                                                                    className={`h-4 w-4 ${
+                                                                        i <
+                                                                        review.rating
+                                                                            ? 'text-yellow-400'
+                                                                            : 'text-gray-300'
+                                                                    }`}
+                                                                />
+                                                            )
+                                                        )}
+                                                    </div>
+                                                    <button
+                                                        className="mr-2"
+                                                        onClick={() =>
+                                                            console.log(
+                                                                'Edit button'
+                                                            )
+                                                        }
+                                                    >
+                                                        <FaEdit className="text-blue-500 hover:text-blue-700 cursor-pointer" />
+                                                    </button>
+
+                                                    <button
+                                                        onClick={() =>
+                                                            handleDeleteReview(
+                                                                review.id
+                                                            )
+                                                        }
+                                                    >
+                                                        <MdDelete className="text-red-500 hover:text-red-700 cursor-pointer" />
+                                                    </button>
                                                 </div>
                                             </div>
-                                            <p className="text-sm text-gray-700">
+                                            <p className="text-sm text-gray-700 mt-2">
                                                 {review.body}
                                             </p>
                                         </CardContent>
