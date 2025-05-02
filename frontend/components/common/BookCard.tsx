@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, use } from 'react'
 import Image from 'next/image'
 import { FaStar } from 'react-icons/fa'
 import {
@@ -14,12 +14,14 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
 import { apiClient } from '@/lib/api'
-import { FaEdit } from 'react-icons/fa' // Edit icon
-import { MdDelete } from 'react-icons/md' // Delete icon
+import { FaEdit } from 'react-icons/fa'
+import { MdDelete } from 'react-icons/md'
+import { useAuthStore } from '@/store/auth'
 
 interface Review {
     id: number
     user: {
+        userID: number
         username: string
     }
     rating: number
@@ -53,8 +55,18 @@ export default function BookCard({
     const [reviewText, setReviewText] = useState('')
 
     const [reviews, setReviews] = useState<
-        { id: number; user: string; rating: number; body: string }[]
+        {
+            id: number
+            user: {
+                userID: number
+                username: string
+            }
+            rating: number
+            body: string
+        }[]
     >([])
+
+    const { user } = useAuthStore()
 
     useEffect(() => {
         if (isModalOpen) {
@@ -68,13 +80,15 @@ export default function BookCard({
                     const mappedReviews = response.objects.map(
                         (review: Review) => ({
                             id: review.id,
-                            user: review.user.username,
+                            user: {
+                                userID: review.user.id,
+                                username: review.user.username,
+                            },
                             rating: review.rating,
                             body: review.body,
                         })
                     )
 
-                    console.log('Fetched reviews:', mappedReviews)
                     setReviews(mappedReviews)
                 } catch (error) {
                     console.error('Error fetching reviews:', error)
@@ -224,10 +238,21 @@ export default function BookCard({
                                         <CardContent className="p-0">
                                             <div className="flex flex-col md:flex-row justify-between items-center mb-1">
                                                 <span className="font-medium">
-                                                    <b>{review.user}</b>
+                                                    <b>
+                                                        {review.user.username}
+                                                    </b>
                                                 </span>
                                                 <div className="flex items-end">
-                                                    <div className="flex px-3 mr-3 border-r-2 border-slate-400">
+                                                    <div
+                                                        className={
+                                                            user &&
+                                                            user.id ===
+                                                                review.user
+                                                                    .userID
+                                                                ? 'flex px-3 mr-3 border-r-2 border-slate-400'
+                                                                : 'flex px-3'
+                                                        }
+                                                    >
                                                         {[...Array(5)].map(
                                                             (_, i) => (
                                                                 <FaStar
@@ -242,26 +267,33 @@ export default function BookCard({
                                                             )
                                                         )}
                                                     </div>
-                                                    <button
-                                                        className="mr-2"
-                                                        onClick={() =>
-                                                            console.log(
-                                                                'Edit button'
-                                                            )
-                                                        }
-                                                    >
-                                                        <FaEdit className="text-blue-500 hover:text-blue-700 cursor-pointer" />
-                                                    </button>
+                                                    {user &&
+                                                        user.id ===
+                                                            review.user
+                                                                .userID && (
+                                                            <>
+                                                                <button
+                                                                    className="mr-2"
+                                                                    onClick={() =>
+                                                                        console.log(
+                                                                            'Edit button'
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <FaEdit className="text-blue-500 hover:text-blue-700 cursor-pointer" />
+                                                                </button>
 
-                                                    <button
-                                                        onClick={() =>
-                                                            handleDeleteReview(
-                                                                review.id
-                                                            )
-                                                        }
-                                                    >
-                                                        <MdDelete className="text-red-500 hover:text-red-700 cursor-pointer" />
-                                                    </button>
+                                                                <button
+                                                                    onClick={() =>
+                                                                        handleDeleteReview(
+                                                                            review.id
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <MdDelete className="text-red-500 hover:text-red-700 cursor-pointer" />
+                                                                </button>
+                                                            </>
+                                                        )}
                                                 </div>
                                             </div>
                                             <p className="text-sm text-gray-700 mt-2">
