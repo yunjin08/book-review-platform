@@ -18,6 +18,7 @@ export default function LandingPage() {
     activeUsers: "most",
     mostReviewed: "most",
   });
+  
   const [addBookModalOpen, setAddBookModalOpen] = useState(false); // State for modal visibility
 
   const handleSectionChange = (section: Section) => {
