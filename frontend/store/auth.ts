@@ -24,7 +24,7 @@ interface AuthState {
     isAPIInitialized: boolean
 
     // Auth actions
-    login: (username: string, password: string) => Promise<void>
+    login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>
     register: (data: RegisterData) => Promise<void>
     logout: () => Promise<void>
     verifyToken: (token?: string, email?: string) => Promise<boolean>
@@ -86,7 +86,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     isAPIInitialized: false,
 
     login: async (username: string, password: string) => {
-        set({ isLoading: true, error: null })
         try {
             const response = await apiClient.post<{
                 token: string
@@ -103,6 +102,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 isAuthenticated: true,
                 isLoading: false,
             })
+
+            return { success: true };
         } catch (error) {
             set({
                 error:
@@ -110,6 +111,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 isLoading: false,
                 isAuthenticated: false,
             })
+            return { success: false, error: error instanceof Error ? error.message : String(error) };
         }
     },
 

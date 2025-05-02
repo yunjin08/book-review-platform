@@ -1,9 +1,11 @@
 'use client'
-import React, { useEffect, lazy, useState, Suspense } from 'react'
+import React, { useEffect, lazy, useState } from 'react'
 import { getBooks } from '@/services/book'
 import { initApiClient } from '@/lib/api'
 import { getAccessToken } from '@/store/auth'
 import { useAuthStore } from '@/store/auth'
+import { Button } from "@/components/ui/button";
+import { FaBook, FaPlus } from "react-icons/fa";
 
 const BookCard = lazy(() => import('../common/BookCard'))
 
@@ -15,7 +17,7 @@ interface Book {
     coverUrl: string
 }
 
-export default function MostReviewedSection() {
+export default function MostReviewedSection({ onAddBookClick }: { onAddBookClick: () => void }) {
     const { isAuthenticated } = useAuthStore()
     const [books, setBooks] = useState<Book[]>([])
     const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -82,12 +84,16 @@ export default function MostReviewedSection() {
                     <p className="text-gray-500 mb-6">
                         Be the first to add a review!
                     </p>
-                    <a
-                        href="/add-book"
-                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                    >
-                        Add a Book
-                    </a>
+                    <Button
+                        className="bg-slate-800 text-white hover:bg-slate-700 text-xs md:text-sm cursor-pointer"
+                        onClick={()=>{
+                            onAddBookClick()
+                        }} // Trigger modal
+                        >
+                        <FaBook className="w-3 h-3 md:w-4 md:h-4" />
+                        <span>Add Book</span>
+                        <FaPlus className="ml-3 w-2 h-2 md:w-3 md:h-3" />
+                    </Button>
                 </div>
             ) : (
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 w-full">

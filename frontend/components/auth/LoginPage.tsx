@@ -18,7 +18,10 @@ export default function LoginPage() {
         e.preventDefault()
         try {
             const result = await login(username, password)
-            console.log('Login result:', result)
+            if (!result.success) {
+                console.error('Login error:', result.error);
+                return;
+            }
             router.push('/')
         } catch (error) {
             console.error('Login failed:', error)
