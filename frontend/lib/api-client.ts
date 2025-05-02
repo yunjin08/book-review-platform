@@ -44,13 +44,11 @@ const handleLogout = async (): Promise<void> => {
 const requestInterceptor = async (
     reqConfig: InternalAxiosRequestConfig
 ): Promise<InternalAxiosRequestConfig> => {
-    console.log('Request Interceptor Triggered for URL:', reqConfig.url);
     if (isPublicEndpoint(reqConfig.url)) {
         return reqConfig
     }
 
     const accessToken = getAccessToken()
-    console.log('Access Token:', accessToken)
     if (accessToken && reqConfig.headers) {
         reqConfig.headers.Authorization = `Bearer ${accessToken}`
     }
@@ -98,7 +96,6 @@ export const initApiWithAuth = (baseURL: string): void => {
             'Content-Type': 'application/json',
         },
     })
-    console.log('API Client Initialized with Base URL:', baseURL)
 
     // Add interceptors to the axios instance
     if (axiosInstance) {
@@ -110,8 +107,6 @@ export const initApiWithAuth = (baseURL: string): void => {
             responseInterceptor,
             responseErrorInterceptor
         )
-        
-        console.log('Request and Response Interceptors Added')
     } else {
         console.error('Axios instance is not initialized')
     }

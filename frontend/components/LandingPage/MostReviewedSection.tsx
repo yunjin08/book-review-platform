@@ -3,6 +3,7 @@ import React, { useEffect, lazy, useState, Suspense } from 'react'
 import { getBooks } from '@/services/book'
 import { initApiClient } from '@/lib/api'
 import { getAccessToken } from '@/store/auth'
+import { useAuthStore } from '@/store/auth'
 
 const BookCard = lazy(() => import('../common/BookCard'))
 
@@ -15,13 +16,18 @@ interface Book {
 }
 
 export default function MostReviewedSection() {
+    const { isAuthenticated } = useAuthStore()
     const [books, setBooks] = useState<Book[]>([])
     const [isLoading, setIsLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
+        if (!isAuthenticated) {
+            console.error('User is not authenticated or access token is missing')
+            return
+        }
         const accessToken = getAccessToken()
-        console.log('Access Token:', accessToken)
+
         initApiClient({
             baseURL:
                 process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -38,7 +44,6 @@ export default function MostReviewedSection() {
         setIsLoading(true)
         getBooks({})
             .then((result) => {
-                console.log(result.objects, 'books')
                 setBooks(result.objects)
             })
             .catch((err) => {

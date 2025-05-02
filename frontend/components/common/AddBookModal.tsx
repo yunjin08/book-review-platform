@@ -74,7 +74,6 @@ export default function AddBookModal({
     try {
       getGenre({}).then((result) => { 
         setGenres(result.objects);
-        console.log(result.objects, 'genres')
       });
     } catch (error) {
       console.error("Error fetching genres:", error);

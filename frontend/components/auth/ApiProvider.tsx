@@ -34,7 +34,6 @@ export function ApiProvider({ children }: { children: ReactNode }) {
             // Initialize the API client
             initApiWithAuth(apiBaseUrl)
             setState({ isInitialized: true, error: null })
-            console.log('API client initialized with URL:', apiBaseUrl)
         } catch (error) {
             console.error('Failed to initialize API client:', error)
             setState({ isInitialized: false, error: error as Error })

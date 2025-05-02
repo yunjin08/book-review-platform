@@ -16,7 +16,6 @@ export default function AnimatedBookBackground() {
                 y: e.clientY,
             })
         }
-        console.log('sdfs')
 
         window.addEventListener('mousemove', handleMouseMove)
 

@@ -161,8 +161,7 @@ class RegistrationView(APIView):
             return Response({"error": "User already exists"}, status=409)
 
 class LogoutView(APIView):
-    permission_classes = [IsTokenValidated]
-
+    permission_classes = [AllowAny]
     def post(self, request, format=None):
         # In JWT, logout is handled client-side by removing the token
         # We can add any server-side cleanup here if needed

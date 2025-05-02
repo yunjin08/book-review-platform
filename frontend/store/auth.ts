@@ -86,12 +86,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     isAPIInitialized: false,
 
     login: async (username: string, password: string) => {
-        console.log(
-            'Login attempt with username:',
-            username,
-            'and password:',
-            password
-        )
         set({ isLoading: true, error: null })
         try {
             const response = await apiClient.post<{
@@ -184,7 +178,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 token: tokenToVerify,
                 email: emailToUse,
             })
-            console.log('Token verified successfully')
             return true
         } catch {
             return false
@@ -204,20 +197,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     loadUserFromCookies: async () => {
         const { token: accessToken, email } = getAccessToken()
-        console.log(
-            'Loading user from cookies with token:',
-            accessToken,
-            'and email:',
-            email
-        )
         if (!accessToken || !email) return
 
         set({ isLoading: true })
         try {
             // Verify the token is valid
-            console.log('Verifying token:', accessToken, 'and email:', email)
             const isValid = await get().verifyToken(accessToken, email)
-            console.log('Token verification result:', isValid)
             set({ isAuthenticated: isValid })
         } catch (error) {
             console.error('AuthStore: Failed to load user from cookies', error)
