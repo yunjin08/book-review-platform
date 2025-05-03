@@ -4,6 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from django.db.models import Avg
 from django.db.models.signals import post_migrate  # Add this import
 from django.dispatch import receiver
+from rest_framework import status
 
 DEFAULT_GENRES = [
     "Mystery",

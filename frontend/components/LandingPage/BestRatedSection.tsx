@@ -20,7 +20,6 @@ export default function MostReviewedSection({
     const [isLoading, setIsLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
 
-    // Fetch books after API is initialized
     useEffect(() => {
         const orderBy =
             sortOption['bookRate'] === 'highest'

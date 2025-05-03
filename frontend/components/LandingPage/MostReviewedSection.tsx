@@ -23,7 +23,6 @@ export default function MostReviewedSection({
         items: books,
     } = useBookStore()
 
-    console.log(books, 'bookss')
     useEffect(() => {
         const orderBy =
             sortOption['mostReviewed'] === 'most'

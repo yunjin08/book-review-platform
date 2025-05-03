@@ -100,5 +100,12 @@ class ReadingList(models.Model):
     class Meta:
         unique_together = ['user', 'book']
         
+    @property
+    def read_books(self):
+        return self.reading_lists.filter(status='read')
+    
+    def get_read_books(self):
+        return Book.objects.filter(in_reading_lists__user=self, in_reading_lists__status='read')
+
     def __str__(self):
         return f"{self.user.username} - {self.book.title} ({self.get_status_display()})"

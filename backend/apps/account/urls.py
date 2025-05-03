@@ -13,6 +13,7 @@ urlpatterns = [
         ReadingListView.as_view({"get": "retrieve", "put": "update", "delete": "destroy"}),
         name="document-detail",
     ),
+    path("reading-list/", ReadingListView.as_view({"get": "list", "post": "create"}), name="reading-list-create"),
     path("authenticate/", AuthenticationView.as_view(), name="authentication"),
     path("registration/", RegistrationView.as_view(), name="registration"),
     path("logout/", LogoutView.as_view(), name="logout"),

@@ -18,6 +18,7 @@ from main.utils.generic_api import GenericView
 from rest_framework.decorators import action
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from jwt.exceptions import InvalidTokenError, ExpiredSignatureError
+from rest_framework import status
 
 
 class UserView(GenericView):
@@ -59,6 +60,33 @@ class ReadingListView(GenericView):
     queryset = ReadingList.objects.all()
     serializer_class = ReadingListSerializer
     size_per_request = 1000
+
+    def get_serializer(self, *args, **kwargs):
+        # Initialize the serializer with the provided arguments and context
+        kwargs['context'] = kwargs.get('context', {})
+        kwargs['context']['request'] = self.request
+        return self.serializer_class(*args, **kwargs)
+    
+    def get_queryset(self):
+        # Filter the queryset to only include entries for the logged-in user
+        if self.request.user.is_authenticated:
+            return ReadingList.objects.filter(user=self.request.user)
+        return ReadingList.objects.none() 
+
+    def create(self, request, *args, **kwargs):
+        # Use the get_serializer method to initialize the serializer
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+        except Exception as e:
+            pass
+        # Suppress the response by returning 204 No Content
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def perform_create(self, serializer):
+        # Save the serializer instance
+        serializer.save()
 
     def filter_queryset(self, filters, excludes):
         # Add custom filtering logic if needed
