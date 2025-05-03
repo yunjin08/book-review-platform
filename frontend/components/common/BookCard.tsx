@@ -18,6 +18,7 @@ import { MdDelete } from 'react-icons/md'
 import { useAuthStore } from '@/store/auth'
 import { toast } from 'sonner'
 import { useCreateBookReadingStore } from '@/store/book'
+import { useBookReadingStore } from '@/store/book'
 
 interface Review {
     id: number
@@ -64,6 +65,8 @@ export default function BookCard({
     const [editingReviewId, setEditingReviewId] = useState<number | null>(null)
     const [editedReviewText, setEditedReviewText] = useState('')
 
+    const { fetchAll: fetchAllBookReadingHistory } =
+        useBookReadingStore()
     // Add a new state for editing ratings
     const [editRating, setEditRating] = useState(0)
     // Add a new state for hover rating while editing
@@ -136,6 +139,9 @@ export default function BookCard({
             createBookReading({ book: bookId, date_started, date_finished })
                 .then((response) => {
                     console.log('Reading added successfully:', response)
+                    if (fetchAllBookReadingHistory) {   
+                        fetchAllBookReadingHistory()
+                    }
                 })
                 .catch((error) => {
                     console.error('Error adding reading:', error)
