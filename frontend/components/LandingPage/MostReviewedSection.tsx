@@ -49,7 +49,7 @@ export default function MostReviewedSection({
             <p className="text-2xl md:text-4xl font-bold mb-4">
                 Reviewed Books
             </p>
-            <p className="text-xs md:text-lg text-justify mb-4">
+            <p className="text-xs md:text-[0.95rem] text-justify mb-4">
                 These are the books that everyone&apos;s had something to say
                 about: the ones sparking conversations, inspiring debates, or...
                 getting people to ranting about why it&apos;s one of the books
