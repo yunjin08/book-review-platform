@@ -68,7 +68,6 @@ export default function BookCard({
                 body: reviewText,
             })
 
-            console.log('Review submitted successfully:', response)
 
             // Reset the form and optionally close the modal
             setReviewText('')
@@ -93,8 +92,7 @@ export default function BookCard({
 
         if (createBookReading) {
             createBookReading({ book: bookId, date_started, date_finished })
-                .then((response) => {
-                    console.log('Reading added successfully:', response)
+                .then(() => {
                     if (fetchAllBookReadingHistory) {   
                         fetchAllBookReadingHistory()
                     }

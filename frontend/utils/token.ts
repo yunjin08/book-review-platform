@@ -17,7 +17,6 @@ export const getToken = (): {
     const refreshToken = Cookies.get(STORAGE_KEYS.REFRESH_TOKEN)
     const email = Cookies.get(STORAGE_KEYS.EMAIL)
 
-    console.log("PARSED TOKENS", { access: accessToken, refresh: refreshToken, email })
     
     return {
         token: accessToken || null,

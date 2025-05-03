@@ -203,7 +203,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 token: string
             }>('/account/refresh-token/', { refresh })
 
-            console.log("REFRESHED TOKEN", response)
             
             // Only update the access token
             saveTokens({

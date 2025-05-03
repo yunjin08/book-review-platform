@@ -93,12 +93,10 @@ const responseErrorInterceptor = async (
         // Try to refresh the token
         const refreshed = await useAuthStore.getState().refreshToken()
 
-        console.log('REFRESHED', refreshed)
 
         if (refreshed) {
             // If token refresh was successful, update the authorization header
             const { token } = getToken()
-            console.log('TOKEN', token)
             if (token && axiosInstance) {
                 originalRequest.headers.Authorization = `Bearer ${token}`
                 return axiosInstance(originalRequest)
@@ -106,12 +104,10 @@ const responseErrorInterceptor = async (
         }
 
         // If refresh failed or we couldn't get the new token
-        console.log("REFRESHED FAILED OR COULDN'T GET NEW TOKEN")
         await handleLogout()
         return Promise.reject(error)
     } catch (refreshError) {
         console.error('Error refreshing token:', refreshError)
-        console.log('ERROR REFRESHING TOKEN')
         await handleLogout()
         return Promise.reject(error)
     }
@@ -125,8 +121,6 @@ export const initApiWithAuth = (baseURL: string): void => {
             'Content-Type': 'application/json',
         },
     })
-    console.log('INITIALIZED API WITH AUTH IN API CLIENT')
-
     // Add interceptors to the axios instance
     if (axiosInstance) {
         axiosInstance.interceptors.request.use(

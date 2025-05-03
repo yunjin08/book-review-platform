@@ -12,8 +12,6 @@ export default function MostActiveSection({
     const { fetchAll: fetchAllUsers, items: users, meta } = useUserStore()
     const [currentPage, setCurrentPage] = useState(1)
 
-    console.log(users,'sdf')
-
     useEffect(() => {
         const orderBy =
         sortOption['activeUsers'] === 'most'

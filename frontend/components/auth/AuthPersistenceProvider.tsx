@@ -21,14 +21,12 @@ const AuthPersistenceProvider = (props: PropsInterface) => {
         const init = async () => {
             setAPIInitialized()
             await initializeAuth()
-            console.log('INITIALIZED AUTH IN AUTH PERSISTENCE PROVIDER')
         }
         init()
     }, [])
 
     useEffect(() => {
         if (isAPIInitialized && !isLoading && !isAuthenticated) {
-            console.log('PUSHING TO LOGIN')
             router.push('/login')
         }
     }, [isAPIInitialized, isLoading, isAuthenticated, router])

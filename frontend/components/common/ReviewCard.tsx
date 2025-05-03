@@ -60,14 +60,12 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ isModalOpen, bookId }) => {
 
     useEffect(() => {
         if (isModalOpen) {
-            console.log('BookID:', bookId)
             const fetchReviews = async () => {
                 try {
                     const response = await apiClient.get(
                         `/review/reviews/?book_id=${bookId}`
                     )
 
-                    console.log('Fetched reviews:', response)
 
                     const mappedReviews = response.objects.map(
                         (review: Review) => ({
@@ -98,7 +96,6 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ isModalOpen, bookId }) => {
             setReviews((prevReviews) =>
                 prevReviews.filter((review) => review.id !== reviewId)
             )
-            console.log('Review deleted successfully')
         } catch (error) {
             console.error('Error deleting review:', error)
             alert('Failed to delete review. Please try again.')
@@ -136,7 +133,6 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ isModalOpen, bookId }) => {
 
             setEditingReviewId(null)
             setEditedReviewText('')
-            console.log('Review updated successfully')
         } catch (error) {
             console.error('Error updating review:', error)
             alert('Failed to update review. Please try again.')
@@ -144,7 +140,6 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ isModalOpen, bookId }) => {
     }
 
     const handleCommentClick = (reviewId: number) => {
-        console.log(`Submitted Comment to review ${reviewId}:`, CommentText)
         setCommentingToReviewId(reviewId)
         setCommentText('')
     }
@@ -161,7 +156,6 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ isModalOpen, bookId }) => {
                 review: reviewId,
             })
 
-            console.log(`Submitted Comment to review ${reviewId}:`, CommentText)
 
             setCommentingToReviewId(0)
             setCommentText('')

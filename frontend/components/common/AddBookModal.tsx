@@ -112,8 +112,7 @@ export default function AddBookModal({
 
         if (createBook) {
             try {
-                const result = createBook(parsedData)
-                console.log('Submitting from modal:', parsedData, result)
+                createBook(parsedData)
                 onSubmit(parsedData)
                 toast(`Submitted a book successfully`, {
                     style: { color: 'green' },
