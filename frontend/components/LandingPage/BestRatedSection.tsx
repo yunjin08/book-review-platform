@@ -23,8 +23,8 @@ export default function MostReviewedSection({
     useEffect(() => {
         const orderBy =
             sortOption['bookRate'] === 'highest'
-                ? '-average_rating'
-                : 'average_rating'
+                ? 'average_rating'
+                : '-average_rating'
         const params = {
             order_by: orderBy,
         }
