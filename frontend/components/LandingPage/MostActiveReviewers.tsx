@@ -12,6 +12,8 @@ export default function MostActiveSection({
     const { fetchAll: fetchAllUsers, items: users, meta } = useUserStore()
     const [currentPage, setCurrentPage] = useState(1)
 
+    console.log(users,'sdf')
+
     useEffect(() => {
         const orderBy =
         sortOption['activeUsers'] === 'most'
@@ -56,7 +58,7 @@ export default function MostActiveSection({
                 {users.map((user, index) => (
                     <UserCard
                         key={user.id || index}
-                        name={user.first_name + ' ' + user.last_name}
+                        name={user.username}
                         profilePicture={user.profile_picture || '/logo.png'}
                         reviewsCount={user.reviews_count}
                         bio={user.bio || 'No bio available'}
