@@ -39,7 +39,7 @@ export default function MostReviewedSection({
                 console.error('Error fetching books:', err)
             }
         }
-    }, [fetchAllBooks])
+    }, [fetchAllBooks, sortOption, isAuthenticated])
 
     useEffect(() => {
         console.log('BOOKS HERE', books)

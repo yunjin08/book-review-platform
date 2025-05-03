@@ -13,24 +13,21 @@ export default function MostActiveSection({
     const [currentPage, setCurrentPage] = useState(1)
 
     useEffect(() => {
-        fetchUsers(currentPage)
-    }, [currentPage, sortOption])
-
-    const fetchUsers = (page: number) => {
         const orderBy =
-            sortOption['activeUsers'] === 'most'
-                ? '-reviews_count'
-                : 'reviews_count'
-        const params = {
-            order_by: orderBy,
-            page: page,
-        }
-        if (fetchAllUsers) {
-            fetchAllUsers(params).catch((err: unknown) => {
-                console.error('Failed to fetch users:', err)
-            })
-        }
+        sortOption['activeUsers'] === 'most'
+            ? '-reviews_count'
+            : 'reviews_count'
+    const params = {
+        order_by: orderBy,
     }
+    if (fetchAllUsers) {
+        fetchAllUsers(params).catch((err: unknown) => {
+            console.error('Failed to fetch users:', err)
+        })
+    }
+    }, [currentPage, sortOption, fetchAllUsers])
+
+
 
     const handleNextPage = () => {
         if (meta && currentPage < meta.totalPages) {

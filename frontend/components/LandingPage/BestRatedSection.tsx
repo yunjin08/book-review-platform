@@ -40,7 +40,7 @@ export default function MostReviewedSection({
                     setIsLoading(false)
                 })
         }
-    }, [isAuthenticated])
+    }, [isAuthenticated, fetchAllBooks, sortOption])
 
     return (
         <div className="flex flex-col w-full text-black px-3 md:px-24 xl:px-72 pt-4 md:pt-8 pb-8 md:pb-16">
