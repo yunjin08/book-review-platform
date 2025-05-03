@@ -48,7 +48,7 @@ python manage.py initialize_data
 
 ## 🔐 Environment Variables
 
-All required environment variables are listed here:  
+All required environment variables are listed here (UP access):  
 ➡️ [Environment Setup Guide](https://docs.google.com/document/d/1UqNh61WIitqJ4tXoXBUMkpUMcrNn-GTRKiZCo8iydyQ/edit?usp=sharing)
 
 ---
