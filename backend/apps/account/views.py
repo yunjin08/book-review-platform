@@ -12,7 +12,6 @@ from .serializer import (
     TokenVerificationSerializer,
     TokenRefreshSerializer,
 )
-from .utils.jwt import sign_as_jwt, verify_jwt_token
 from .models import CustomUser, ReadingList
 from apps.review.serializer import ReviewSerializer
 from main.utils.generic_api import GenericView
