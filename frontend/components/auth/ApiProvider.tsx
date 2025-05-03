@@ -29,16 +29,16 @@ export function ApiProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         try {
-            // Get API URL from environment variable or use a default
             const apiBaseUrl = config.api.baseURL
-            // Initialize the API client
             initApiWithAuth(apiBaseUrl)
+            console.log("INITIALIZED API WITH AUTH")
             setState({ isInitialized: true, error: null })
         } catch (error) {
             console.error('Failed to initialize API client:', error)
             setState({ isInitialized: false, error: error as Error })
         } finally {
             initializeAuth()
+            console.log("INITIALIZED AUTH IN API PROVIDER")
         }
     }, [])
 

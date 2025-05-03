@@ -1,86 +1,50 @@
 'use client'
 import React, { useEffect, lazy, useState } from 'react'
-import { getBooks } from '@/services/book'
-import { initApiClient } from '@/lib/api'
-import { getAccessToken } from '@/store/auth'
 import { useAuthStore } from '@/store/auth'
 import { Button } from '@/components/ui/button'
 import { FaBook, FaPlus } from 'react-icons/fa'
+import { useBookStore } from '@/store/book'
+import { Book } from '@/interface'
 
 const BookCard = lazy(() => import('../common/BookCard'))
 
-interface Book {
-    id: number
-    title: string
-    author: string
-    genres_detail: { id: number; name: string }[]
-    rating: number
-    cover_image: string
-    rating_count: number
-    average_rating: number
-    total_reviews: number
-}
-
-export default function BestRatedSection({
+export default function MostReviewedSection({
     sortOption,
     onAddBookClick,
 }: {
-    sortOption: { [key: string]: string },
+    sortOption: { [key: string]: string }
     onAddBookClick: () => void
 }) {
+    const { fetchAll: fetchAllBooks, items: books } = useBookStore()
     const { isAuthenticated } = useAuthStore()
-    const [books, setBooks] = useState<Book[]>([])
     const [isLoading, setIsLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
 
-    console.log(books, 'bookss')
+    // Fetch books after API is initialized
     useEffect(() => {
-        if (!isAuthenticated) {
-            console.error(
-                'User is not authenticated or access token is missing'
-            )
-            return
-        }
-        const accessToken = getAccessToken()
-
-        initApiClient({
-            baseURL:
-                process.env.NEXT_PUBLIC_API_BASE_URL ||
-                'http://localhost:8000/api/v1/',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken.token}`,
-            },
-        })
-    }, [])
-
-    useEffect(() => {
-        console.log('sortOption', sortOption)
         const orderBy =
-            sortOption['bookRate'] === 'highest' ? '-average_rating' : 'average_rating'
+            sortOption['bookRate'] === 'highest'
+                ? '-average_rating'
+                : 'average_rating'
         const params = {
             order_by: orderBy,
         }
         setIsLoading(true)
-        getBooks(params)
-            .then((result) => {
-                console.log('Fetched books:', result.objects)
-                setBooks(result.objects)
-            })
-            .catch((err) => {
-                console.error('Failed to fetch books:', err)
-                setError('Failed to load books. Please try again later.')
-            })
-            .finally(() => {
-                setIsLoading(false)
-            })
-    }, [sortOption])
+        if (fetchAllBooks) {
+            fetchAllBooks(params)
+                .catch((err) => {
+                    console.error('Failed to fetch books:', err)
+                    setError('Failed to load books. Please try again later.')
+                })
+                .finally(() => {
+                    setIsLoading(false)
+                })
+        }
+    }, [isAuthenticated])
 
     return (
         <div className="flex flex-col w-full text-black px-3 md:px-24 xl:px-72 pt-4 md:pt-8 pb-8 md:pb-16">
-            <p className="text-2xl md:text-4xl font-bold mb-4">
-                Rated Books
-            </p>
+            <p className="text-2xl md:text-4xl font-bold mb-4">Rated Books</p>
             <p className="text-xs md:text-lg text-justify mb-4">
                 These are the absolute <i>bangers</i>: the books so good they
                 had readers screaming, crying, throwing up (like in a good way).
@@ -123,8 +87,7 @@ export default function BestRatedSection({
                             title={book.title}
                             author={book.author}
                             genres={book.genres_detail || []}
-                            rating={book.average_rating || 0}
-                            rating_count={book.total_reviews || 0}
+                            rating={book.total_reviews || 0}
                             coverUrl={book.cover_image || '/logo.png'}
                         />
                     ))}

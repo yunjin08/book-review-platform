@@ -1,113 +1,93 @@
 'use client'
 import React, { lazy, useEffect, useState } from 'react'
-import { useAuthStore } from '@/store/auth'
-import { getAccessToken } from '@/store/auth'
-import { initApiClient } from '@/lib/api'
-import { getUsers } from '@/services/user'
-
+import { useUserStore } from '@/store/user'
 
 const UserCard = lazy(() => import('./UserCard'))
 
-interface User {
-    name: string
-    profilePicture: string
-    reviewsCount: number
-    bio: string
-    first_name: string
-    last_name: string
-    reviews_count: number
-}
-
-export default function MostActiveSection({sortOption}: { sortOption: { [key: string]: string } }) {
-    const { isAuthenticated } = useAuthStore()
-    const [user, setUsers] = useState<User[]>([])
-    const [isLoading, setIsLoading] = useState<boolean>(true)
-    const [error, setError] = useState<string | null>(null)
+export default function MostActiveSection({
+    sortOption,
+}: {
+    sortOption: { [key: string]: string }
+}) {
+    const { fetchAll: fetchAllUsers, items: users, meta } = useUserStore()
+    const [currentPage, setCurrentPage] = useState(1)
 
     useEffect(() => {
-        if (!isAuthenticated) {
-            console.error(
-                'User is not authenticated or access token is missing'
-            )
-            return
-        }
-        const accessToken = getAccessToken()
+        fetchUsers(currentPage)
+    }, [currentPage, sortOption])
 
-        initApiClient({
-            baseURL:
-                process.env.NEXT_PUBLIC_API_BASE_URL ||
-                'http://localhost:8000/api/v1/',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken.token}`,
-            },
-        })
-    }, [])
-
-
-    useEffect(() => {
-        const orderBy = sortOption['activeUsers'] === 'most' ? '-reviews_count' : 'reviews_count'
+    const fetchUsers = (page: number) => {
+        const orderBy =
+            sortOption['activeUsers'] === 'most'
+                ? '-reviews_count'
+                : 'reviews_count'
         const params = {
-            reviews_count__gt: 0, // Filter users with reviews_count > 0
-            // Pagination
-            order_by: orderBy,    // Dynamic ordering
-        };
-        setIsLoading(true)
-        getUsers(params)
-            .then((result) => {
-                console.log('Fetched users:', result.objects)
-                setUsers(result.objects)
+            order_by: orderBy,
+            page: page,
+        }
+        if (fetchAllUsers) {
+            fetchAllUsers(params).catch((err: unknown) => {
+                console.error('Failed to fetch users:', err)
             })
-            .catch((err) => {
-                console.error('Failed to fetch books:', err)
-                setError('Failed to load books. Please try again later.')
-            })
-            .finally(() => {
-                setIsLoading(false)
-            })
-    }, [sortOption])
+        }
+    }
+
+    const handleNextPage = () => {
+        if (meta && currentPage < meta.totalPages) {
+            setCurrentPage(currentPage + 1)
+        }
+    }
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1)
+        }
+    }
 
     return (
         <div className="flex flex-col w-full px-3 text-black md:px-24 xl:px-72 pt-4 md:pt-8 pb-8 md:pb-16">
-            <p className="text-2xl md:text-4xl font-bold mb-4">
-                Active Users
-            </p>
+            <p className="text-2xl md:text-4xl font-bold mb-4">Active Users</p>
             <p className="text-xs md:text-lg text-justify mb-4">
                 These are the users who have been leading the conversation,
                 sharing their reviews, and keeping the community buzzing. From
                 insightful critiques to passionate recommendations, these users
                 are the ones contributing the most to the discussions. Want to
-                see what’s shaping the book world? Check out the most active
-                voices here!
+                see what&apos;s shaping the book world? Check out the most
+                active voices here!
             </p>
             <div className="grid min-h-[25rem] grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 w-full">
-                {isLoading && (
-                    <div className="flex items-center justify-center w-full h-full">
-                        <p className="text-lg">Loading...</p>
-                    </div>
-                )}
-                {error && (
-                    <div className="flex items-center justify-center w-full h-full">
-                        <p className="text-lg text-red-500">{error}</p>
-                    </div>
-                )}
-                {user.length === 0 && !isLoading && !error && (
-                    <div className="flex items-center justify-center w-full h-full">
-                        <p className="text-lg text-gray-500">
-                            No users found.
-                        </p>
-                    </div>
-                )}  
-                {user.map((user, index) => (
+                {users.map((user, index) => (
                     <UserCard
-                        key={index}
+                        key={user.id || index}
                         name={user.first_name + ' ' + user.last_name}
-                        profilePicture={user.profilePicture || '/logo.png'}
+                        profilePicture={user.profile_picture || '/logo.png'}
                         reviewsCount={user.reviews_count}
                         bio={user.bio || 'No bio available'}
                     />
                 ))}
             </div>
+
+            {meta && meta.totalPages > 1 && (
+                <div className="flex justify-between items-center mt-6">
+                    <button
+                        className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+                        onClick={handlePrevPage}
+                        disabled={currentPage === 1}
+                    >
+                        Previous
+                    </button>
+                    <span className="text-sm">
+                        Page {meta.currentPage} of {meta.totalPages}
+                    </span>
+                    <button
+                        className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+                        onClick={handleNextPage}
+                        disabled={currentPage >= meta.totalPages}
+                    >
+                        Next
+                    </button>
+                </div>
+            )}
         </div>
     )
 }

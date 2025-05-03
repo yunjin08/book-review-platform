@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import Image from 'next/image'
 import { FaStar } from 'react-icons/fa'
 import {
     Dialog,
@@ -17,8 +16,7 @@ import { apiClient } from '@/lib/api'
 import { FaEdit } from 'react-icons/fa'
 import { MdDelete } from 'react-icons/md'
 import { useAuthStore } from '@/store/auth'
-import { toast } from "sonner"
-
+import { toast } from 'sonner'
 
 interface Review {
     id: number
@@ -47,7 +45,7 @@ export default function BookCard({
     genres,
     rating,
     coverUrl,
-    rating_count
+    rating_count,
 }: BookCardProps) {
     // State for modal visibility
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -135,9 +133,9 @@ export default function BookCard({
             setIsModalOpen(false)
         } catch (error) {
             console.error('Error submitting review:', error)
-            toast(`Failed to submit review, ${(error?.detail)?.toLowerCase()}`,{
-                style: {color: 'red'},
-            });
+            toast(`Failed to submit review, ${error}`, {
+                style: { color: 'red' },
+            })
         }
     }
 
@@ -198,13 +196,10 @@ export default function BookCard({
                 className="flex flex-col bg-white rounded-lg shadow-md pb-2 md:p-4 hover:scale-105 transition-transform cursor-pointer"
                 onClick={() => setIsModalOpen(true)}
             >
-                <div
-                    className="relative w-full"
-                >
+                <div className="relative w-full">
                     <img
                         src={coverUrl}
                         alt={title}
-                        layout="fill"
                         className="rounded-md mb-4 w-full h-64  object-cover"
                     />
                 </div>
@@ -228,7 +223,8 @@ export default function BookCard({
                     ))}
                 </div>
                 <p className="text-xs md:text-[0.85rem] mx-2 text-gray-500 md:mb-2">
-                    {rating_count} review{rating_count && rating_count > 1 ? 's' : ''}
+                    {rating_count} review
+                    {rating_count && rating_count > 1 ? 's' : ''}
                 </p>
             </div>
 
@@ -247,13 +243,10 @@ export default function BookCard({
                     <div className="overflow-y-auto flex-grow pr-2">
                         <div className="grid grid-cols-3 border-t-2 border-slate-300 gap-4 my-4 p-2">
                             <div className="col-span-1">
-                                <div
-                                    className="relative w-full"
-                                >
+                                <div className="relative w-full">
                                     <img
                                         src={coverUrl}
                                         alt={title}
-                                        layout="fill"
                                         className="rounded-md mb-4 w-full h-64  object-cover"
                                     />
                                 </div>

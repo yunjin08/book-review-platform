@@ -18,13 +18,26 @@ export interface User {
 export interface Book {
     id: number
     title: string
-    genre: string
+    genres_detail: Genre[]
+    description: string
+    isbn: string
     author: string
-    rating: number // to be changed when json
+    publication_date: string
+    created_by: User
+    created_at: string
+    updated_at: string
+    rating?: number // to be changed when json
+    total_reviews?: number
     cover_image: string
     // Properties likely from your Book model
     average_rating?: number
     reviews_count?: number
+    reviews?: Review[]
+}
+
+export interface Genre {
+    id: number
+    name: string
 }
 
 export interface ReadingList {
