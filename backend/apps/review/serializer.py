@@ -3,10 +3,12 @@ from rest_framework import serializers
 from apps.account.serializer import CustomUserSerializer
 
 class CommentSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+
     class Meta:
         model = Comment
         fields = "__all__"
-        read_only_fields = ['user', 'created_at', 'updated_at']
+        read_only_fields = ['user', 'username' 'created_at', 'updated_at']
 
 class ReviewSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer(read_only=True)

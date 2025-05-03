@@ -6,6 +6,7 @@ from main.utils.generic_api import GenericView
 from .models import Review, Comment
 from .serializer import ReviewSerializer, CommentSerializer
 from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
 from django.db.models import Avg
 
 class ReviewView(GenericView):
@@ -66,6 +67,11 @@ class ReviewView(GenericView):
         comments = review.comments.all()
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data)
+    
+    def get_object(self):
+        """Retrieve the review instance based on the primary key (pk)."""
+        pk = self.kwargs.get('pk')
+        return get_object_or_404(self.queryset, pk=pk)
 
 class CommentView(GenericView):
     queryset = Comment.objects.select_related('user', 'review')

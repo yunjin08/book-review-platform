@@ -36,6 +36,12 @@ interface AddBookModalProps {
     setOpen: (open: boolean) => void
 }
 
+// Genre interface to type the genre data
+interface Genre {
+    id: number
+    name: string
+}
+
 export default function AddBookModal({
     onSubmit,
     open,
