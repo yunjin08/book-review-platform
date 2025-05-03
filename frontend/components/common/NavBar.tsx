@@ -207,7 +207,7 @@ export default function NavBar() {
                             ))
                         ) : (
                             <p className="text-sm text-gray-500">
-                                No books read yet.
+                                No books read yet. Refresh after reading a book.
                             </p>
                         )}
                     </div>

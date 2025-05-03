@@ -1,5 +1,6 @@
 from .models import CustomUser, ReadingList
 from rest_framework import serializers
+from apps.book.models import Book
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -8,15 +9,17 @@ class CustomUserSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class ReadingListSerializer(serializers.ModelSerializer):
-    def __init__(self, *args, **kwargs):
-        # Dynamically import the BookSerializer to avoid circular imports
-        from apps.book.serializer import BookSerializer
-        super().__init__(*args, **kwargs)
-        self.fields['book'] = BookSerializer(read_only=True)  # Add the book field dynamically
+    book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
     class Meta:
         model = ReadingList
         fields = "__all__"
         read_only_fields = ['user']
+
+    def to_representation(self, instance):
+        from apps.book.serializer import BookSerializer  # Avoid circular imports
+        representation = super().to_representation(instance)
+        representation['book'] = BookSerializer(instance.book).data
+        return representation
 
     def create(self, validated_data):
         try:
