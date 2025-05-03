@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import Image from 'next/image'
 import { FaStar } from 'react-icons/fa'
 import {
     Dialog,
@@ -15,6 +14,7 @@ import { Separator } from '@/components/ui/separator'
 import { apiClient } from '@/lib/api'
 import UserStarRating from './UserStarRating'
 import ReviewCard from './ReviewCard'
+import { toast } from 'sonner'
 
 interface BookCardProps {
     bookId: number
@@ -23,6 +23,7 @@ interface BookCardProps {
     genres: { id: number; name: string }[]
     rating: number
     coverUrl: string
+    rating_count?: number
 }
 
 export default function BookCard({
@@ -32,6 +33,7 @@ export default function BookCard({
     genres,
     rating,
     coverUrl,
+    rating_count,
 }: BookCardProps) {
     // State for modal visibility
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -56,7 +58,9 @@ export default function BookCard({
             setIsModalOpen(false)
         } catch (error) {
             console.error('Error submitting review:', error)
-            alert('Failed to submit review. Please try again.')
+            toast(`Failed to submit review, ${(error?.detail).toLowerCase()}`, {
+                style: { color: 'red' },
+            })
         }
     }
 
@@ -66,16 +70,12 @@ export default function BookCard({
                 className="flex flex-col bg-white rounded-lg shadow-md pb-2 md:p-4 hover:scale-105 transition-transform cursor-pointer"
                 onClick={() => setIsModalOpen(true)}
             >
-                <div
-                    className="relative w-full"
-                    style={{ paddingBottom: '150%' }}
-                >
-                    <Image
+                <div className="relative w-full">
+                    <img
                         src={coverUrl}
                         alt={title}
                         layout="fill"
-                        objectFit="cover"
-                        className="rounded-md mb-4"
+                        className="rounded-md mb-4 w-full h-64  object-cover"
                     />
                 </div>
                 <h3 className="text-xs md:text-lg mx-2 text-black font-bold md:mb-1">
@@ -101,7 +101,7 @@ export default function BookCard({
 
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                 <DialogContent className="max-w-md md:max-w-2xl max-h-[85vh] text-black bg-white overflow-hidden flex flex-col">
-                    <DialogHeader className="flex-shrink- border-b-2 border-slate-500">
+                    <DialogHeader className="flex-shrink">
                         <DialogTitle className="text-xl md:text-2xl">
                             {title}
                         </DialogTitle>
@@ -112,18 +112,14 @@ export default function BookCard({
                     </DialogHeader>
 
                     <div className="overflow-y-auto flex-grow pr-2">
-                        <div className="grid grid-cols-3 gap-4 my-4 p-2">
+                        <div className="grid grid-cols-3 border-t-2 border-slate-300 gap-4 my-4 p-2">
                             <div className="col-span-1">
-                                <div
-                                    className="relative w-full"
-                                    style={{ paddingBottom: '150%' }}
-                                >
-                                    <Image
+                                <div className="relative w-full">
+                                    <img
                                         src={coverUrl}
                                         alt={title}
                                         layout="fill"
-                                        objectFit="cover"
-                                        className="rounded-md"
+                                        className="rounded-md mb-4 w-full h-64  object-cover"
                                     />
                                 </div>
                             </div>
@@ -131,10 +127,13 @@ export default function BookCard({
                                 <h3 className="text-lg font-bold mb-2">
                                     Book Summary
                                 </h3>
-                                <p className="text-sm text-gray-700 mb-4">
+                                <p className="text-sm text-gray-700 mb-2">
                                     Average Rating: {rating}/5
                                 </p>
-                                <div className="flex mb-4">
+                                <p className="text-sm text-gray-700 mb-2">
+                                    Rating Counts: {rating_count}
+                                </p>
+                                <div className="flex">
                                     {[...Array(5)].map((_, i) => (
                                         <FaStar
                                             key={i}

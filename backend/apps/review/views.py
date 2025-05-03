@@ -35,6 +35,12 @@ class ReviewView(GenericView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        book = serializer.validated_data.get('book')
+        if Review.objects.filter(user=request.user, book=book).exists():
+            return Response(
+                {"detail": "You have already reviewed this book."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         # Save while injecting user (since 'user' is read_only)
         instance = serializer.save(user=request.user)
 
