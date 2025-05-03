@@ -25,4 +25,7 @@ class RegistrationSerializer(serializers.Serializer):
     password = serializers.CharField(max_length=512)
 
 class TokenVerificationSerializer(serializers.Serializer):
-    token = serializers.CharField(max_length=2048)
+    token = serializers.CharField()
+
+class TokenRefreshSerializer(serializers.Serializer):
+    refresh = serializers.CharField()

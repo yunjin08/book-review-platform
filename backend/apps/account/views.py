@@ -10,6 +10,7 @@ from .serializer import (
     RegistrationSerializer,
     ReadingListSerializer,
     TokenVerificationSerializer,
+    TokenRefreshSerializer,
 )
 from .utils.jwt import sign_as_jwt, verify_jwt_token
 from .models import CustomUser, ReadingList
@@ -186,3 +187,30 @@ class TokenVerificationView(APIView):
             return Response({"valid": False, "message": f"Invalid token: {str(e)}"}, status=401)
         except Exception as e:
             return Response({"valid": False, "message": str(e)}, status=401)
+
+class TokenRefreshView(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request, format=None):
+        serializer = TokenRefreshSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
+            
+        refresh_token = serializer.validated_data['refresh']
+        
+        try:
+            # Create RefreshToken instance from the token string
+            refresh = RefreshToken(refresh_token)
+            # Generate a new access token
+            access_token = str(refresh.access_token)
+            
+            return Response({
+                "access": access_token,
+            })
+        except ExpiredSignatureError:
+            return Response({"error": "Refresh token has expired"}, status=401)
+        except InvalidTokenError as e:
+            return Response({"error": f"Invalid refresh token: {str(e)}"}, status=401)
+        except Exception as e:
+            return Response({"error": str(e)}, status=401)
