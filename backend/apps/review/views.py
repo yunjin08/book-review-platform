@@ -7,8 +7,6 @@ from .models import Review, Comment
 from .serializer import ReviewSerializer, CommentSerializer
 from rest_framework.permissions import IsAuthenticated
 
-
-
 class ReviewView(GenericView):
     queryset = Review.objects.select_related('user', 'book')
     serializer_class = ReviewSerializer
@@ -31,6 +29,24 @@ class ReviewView(GenericView):
     def pre_destroy(self, instance):
         # Update user's review count when a review is deleted
         instance.user.update_counts()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        book = serializer.validated_data.get('book')
+        if Review.objects.filter(user=request.user, book=book).exists():
+            return Response(
+                {"detail": "You have already reviewed this book."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        # Save while injecting user (since 'user' is read_only)
+        instance = serializer.save(user=request.user)
+
+        self.post_create(request, instance)  # Call your custom post-create hook
+
+        response_serializer = self.serializer_class(instance)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['post'])
     def add_comment(self, request, pk=None):

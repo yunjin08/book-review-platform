@@ -5,6 +5,7 @@ import { ApiProvider } from '@/components/auth/ApiProvider'
 import AuthPersistenceProvider from '@/components/auth/AuthPersistenceProvider'
 import { initApiWithAuth } from "@/lib/api-client";
 import { config } from '@/config'
+import { Toaster } from "@/components/ui/sonner"
 
 const geistSans = Geist({
     variable: '--font-geist-sans',
@@ -39,6 +40,7 @@ export default function RootLayout({
                     <AuthPersistenceProvider>
                         {children}
                     </AuthPersistenceProvider>
+                    <Toaster />
                 </body>
             </ApiProvider>
         </html>
