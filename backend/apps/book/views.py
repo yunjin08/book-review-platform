@@ -9,7 +9,6 @@ from django.db.models import Count, Avg
 
 # Create your views here.
 class BookView(GenericView):
-    permission_classes = [IsTokenValidated]
     queryset = Book.objects.annotate(
         total_reviews=Count('reviews'),  # Annotate total_reviews
         average_rating=Avg('reviews__rating')  # Annotate average_rating

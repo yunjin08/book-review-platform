@@ -70,7 +70,6 @@ class ReviewView(GenericView):
 class CommentView(GenericView):
     queryset = Comment.objects.select_related('user', 'review')
     serializer_class = CommentSerializer
-    # permission_classes = [IsAuthenticated]
 
     def pre_update(self, request, instance):
         if instance.user != request.user:
