@@ -19,8 +19,8 @@ export default function LoginPage() {
         try {
             const result = await login(username, password)
             if (!result.success) {
-                console.error('Login error:', result.error);
-                return;
+                console.error('Login error:', result.error)
+                return
             }
             router.push('/')
         } catch (error) {

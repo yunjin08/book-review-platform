@@ -37,10 +37,7 @@ const handleLogout = async (): Promise<void> => {
 
     // Redirect to login page
     if (typeof window !== 'undefined') {
-        const currentPath = window.location.pathname
-        if (currentPath !== '/') {
-            window.location.href = '/login'
-        }
+        window.location.href = '/login'
     }
 }
 
