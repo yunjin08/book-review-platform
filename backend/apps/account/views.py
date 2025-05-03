@@ -25,7 +25,6 @@ class UserView(GenericView):
     serializer_class = CustomUserSerializer
     size_per_request = 1000
     permission_classes = [IsTokenValidated]
-    
     @action(detail=True, methods=['get'])
     def profile(self, request, pk=None):
         """Get user profile"""
@@ -61,7 +60,6 @@ class ReadingListView(GenericView):
     queryset = ReadingList.objects.all()
     serializer_class = ReadingListSerializer
     size_per_request = 1000
-    allowed_filter_fields = ['user', 'book', 'status']
     permission_classes = [IsTokenValidated]
 
     def filter_queryset(self, filters, excludes):

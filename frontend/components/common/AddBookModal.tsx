@@ -18,6 +18,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { createBooks, getGenre } from '@/services/book'
+import { toast } from 'sonner'
 
 interface BookFormData {
     title: string
@@ -113,6 +114,13 @@ export default function AddBookModal({
         console.log('Submitting from modal:', parsedData, result)
         onSubmit(parsedData)
         // setOpen(false);
+
+        console.log('Submitting from modal:', parsedData, result)
+        onSubmit(parsedData)
+        toast(`Submitted a book successfully`, {
+            style: { color: 'green' },
+        })
+        setOpen(false)
 
         window.location.reload()
     }

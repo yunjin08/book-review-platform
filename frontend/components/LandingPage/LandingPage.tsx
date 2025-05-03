@@ -32,6 +32,8 @@ export default function LandingPage() {
     });
   };
 
+  console.log(sortOption, 'sortOption');
+
   const handleAddBook = (bookData: any) => {
     console.log("New book added:", bookData);
     // Handle book submission logic here
@@ -42,7 +44,7 @@ export default function LandingPage() {
       case "bookRate":
         return <BestRatedSection onAddBookClick={() =>  setAddBookModalOpen(true)}/>;
       case "activeUsers":
-        return <MostActiveSection />;
+        return <MostActiveSection sortOption={sortOption}/>;
       case "mostReviewed":
         return <MostReviewedSection  onAddBookClick={() =>  setAddBookModalOpen(true)}/>;
       default:

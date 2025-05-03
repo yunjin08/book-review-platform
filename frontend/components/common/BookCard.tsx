@@ -78,13 +78,13 @@ export default function BookCard({
                         className="rounded-md mb-4 w-full h-64  object-cover"
                     />
                 </div>
-                <h3 className="text-xs md:text-lg mx-2 text-black font-bold md:mb-1">
+                <h3 className="text-xs md:text-lg mx-2 text-black font-bold">
                     {title}
                 </h3>
-                <p className="text-xs md:text-lg mx-2 text-gray-700 md:mb-1">
+                <p className="text-[0.9rem] md:text-md mx-2 text-gray-700">
                     by {author}
                 </p>
-                <p className="text-xs md:text-lg mx-2 text-gray-500 md:mb-2">
+                <p className="text-xs md:text-[0.85rem] mx-2 text-gray-500 md:mb-2">
                     {genres.map((genre) => genre.name).join(', ')}
                 </p>
                 <div className="flex items-center mx-2 mt-auto">

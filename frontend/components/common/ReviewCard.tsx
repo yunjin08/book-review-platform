@@ -9,12 +9,13 @@ import { Button } from '../ui/button'
 import { FaStar } from 'react-icons/fa'
 import { FaEdit } from 'react-icons/fa'
 import { MdDelete } from 'react-icons/md'
-import { FaReply } from 'react-icons/fa'
+import { FaComment } from 'react-icons/fa'
 import { MdSend } from 'react-icons/md'
 import CommentCard from './CommentCard'
 
 interface Comment {
     id: number
+    user: number
     username: string
     body: string
 }
@@ -39,8 +40,8 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ isModalOpen, bookId }) => {
     const [editingReviewId, setEditingReviewId] = useState<number | null>(null)
     const [editedReviewText, setEditedReviewText] = useState('')
     const [editRating, setEditRating] = useState(0)
-    const [replyingToReviewId, setReplyingToReviewId] = useState(0)
-    const [replyText, setReplyText] = useState('')
+    const [CommentingToReviewId, setCommentingToReviewId] = useState(0)
+    const [CommentText, setCommentText] = useState('')
 
     const { user } = useAuthStore()
 
@@ -142,28 +143,28 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ isModalOpen, bookId }) => {
         }
     }
 
-    const handleReplyClick = (reviewId: number) => {
-        console.log(`Submitted reply to review ${reviewId}:`, replyText)
-        setReplyingToReviewId(reviewId)
-        setReplyText('')
+    const handleCommentClick = (reviewId: number) => {
+        console.log(`Submitted Comment to review ${reviewId}:`, CommentText)
+        setCommentingToReviewId(reviewId)
+        setCommentText('')
     }
 
-    const handleReplyCancel = () => {
-        setReplyingToReviewId(0)
-        setReplyText('')
+    const handleCommentCancel = () => {
+        setCommentingToReviewId(0)
+        setCommentText('')
     }
 
-    const handleReplySubmit = async (reviewId: number) => {
+    const handleCommentSubmit = async (reviewId: number) => {
         try {
             await apiClient.post(`/review/reviews/${reviewId}/comments/`, {
-                body: replyText,
+                body: CommentText,
                 review: reviewId,
             })
 
-            console.log(`Submitted reply to review ${reviewId}:`, replyText)
+            console.log(`Submitted Comment to review ${reviewId}:`, CommentText)
 
-            setReplyingToReviewId(0)
-            setReplyText('')
+            setCommentingToReviewId(0)
+            setCommentText('')
         } catch (error) {
             console.error('Error posting comment:', error)
             alert('Failed to post comment. Please try again.')
@@ -275,26 +276,29 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ isModalOpen, bookId }) => {
                         )}
                     </CardContent>
 
-                    <div className="mt-2">
+                    <div className="mt-2 space-y-3">
                         {review.comments.map((comment) => (
                             <CommentCard
                                 key={comment.id}
+                                commentId={comment.id}
+                                reviewId={review.id}
+                                userID={comment.user}
                                 username={comment.username}
                                 body={comment.body}
                             />
                         ))}
                     </div>
 
-                    {replyingToReviewId === review.id ? (
+                    {CommentingToReviewId === review.id ? (
                         <CardContent className="p-3 border rounded-lg border-slate-500">
                             <div className="flex flex-col space-y-3">
                                 <span className="font-medium">
                                     <b>{user.username}</b>
                                 </span>
                                 <Textarea
-                                    value={replyText}
+                                    value={CommentText}
                                     onChange={(e) =>
-                                        setReplyText(e.target.value)
+                                        setCommentText(e.target.value)
                                     }
                                     placeholder="Write your comment..."
                                     rows={3}
@@ -304,7 +308,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ isModalOpen, bookId }) => {
                                     <Button
                                         size="sm"
                                         onClick={() =>
-                                            handleReplySubmit(review.id)
+                                            handleCommentSubmit(review.id)
                                         }
                                         className="text-white hover:opacity-90 cursor-pointer"
                                     >
@@ -313,7 +317,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ isModalOpen, bookId }) => {
                                     </Button>
                                     <Button
                                         size="sm"
-                                        onClick={handleReplyCancel}
+                                        onClick={handleCommentCancel}
                                         className="text-white hover:opacity-90 cursor-pointer"
                                     >
                                         Cancel
@@ -324,10 +328,10 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ isModalOpen, bookId }) => {
                     ) : (
                         <Button
                             size="sm"
-                            onClick={() => handleReplyClick(review.id)}
+                            onClick={() => handleCommentClick(review.id)}
                             className="cursor-pointer py-2 hover:opacity-90"
                         >
-                            <FaReply className="mr-1" />
+                            <FaComment className="mr-1" />
                             Comment
                         </Button>
                     )}
