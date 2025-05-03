@@ -24,13 +24,13 @@ class Genre(models.Model):
         
     def __str__(self):
         return self.name
+    
 # Signal to add default books
 @receiver(post_migrate)
 def create_default_genres(sender, **kwargs):
     """Create default genres after migration."""
-    if sender.name == 'books':  # Replace 'books' with your app name
-        for genre_name in DEFAULT_GENRES:
-            Genre.objects.get_or_create(name=genre_name)
+    for genre_name in DEFAULT_GENRES:
+        Genre.objects.get_or_create(name=genre_name)
 
 class Author(models.Model):
     """Model for book authors"""
