@@ -21,7 +21,7 @@ import { useAuthStore } from '@/store/auth'
 interface Review {
     id: number
     user: {
-        userID: number
+        id: number
         username: string
     }
     rating: number
@@ -238,13 +238,13 @@ export default function BookCard({
                     </DialogHeader>
 
                     <div className="overflow-y-auto flex-grow pr-2">
-                        <div className="grid grid-cols-3 gap-4 my-4 border-2 border-slate-500 p-2 rounded-sm">
+                        <div className="grid grid-cols-3 gap-4 my-4 p-2">
                             <div className="col-span-1">
                                 <div
                                     className="relative w-full"
                                     style={{ paddingBottom: '150%' }}
                                 >
-                                    <img
+                                    <Image
                                         src={coverUrl}
                                         alt={title}
                                         layout="fill"
