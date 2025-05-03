@@ -22,8 +22,10 @@ interface Book {
 }
 
 export default function MostReviewedSection({
+    sortOption,
     onAddBookClick,
 }: {
+    sortOption: { [key: string]: string },
     onAddBookClick: () => void
 }) {
     const { isAuthenticated } = useAuthStore()
@@ -53,8 +55,13 @@ export default function MostReviewedSection({
     }, [])
 
     useEffect(() => {
+        const orderBy =
+            sortOption['mostReviewed'] === 'most' ? '-total_reviews' : 'total_reviews'
+        const params = {
+            order_by: orderBy,    // Dynamic ordering
+        }
         setIsLoading(true)
-        getBooks({})
+        getBooks(params)
             .then((result) => {
                 console.log('Fetched books:', result.objects)
                 setBooks(result.objects)
@@ -66,12 +73,12 @@ export default function MostReviewedSection({
             .finally(() => {
                 setIsLoading(false)
             })
-    }, [])
+    }, [sortOption])
 
     return (
         <div className="flex flex-col w-full text-black px-3 md:px-24 xl:px-72 pt-4 md:pt-8 pb-8 md:pb-16">
             <p className="text-2xl md:text-4xl font-bold mb-4">
-                Most Reviewed Books
+                Reviewed Books
             </p>
             <p className="text-xs md:text-lg text-justify mb-4">
                 These are the books that everyone&apos;s had something to say

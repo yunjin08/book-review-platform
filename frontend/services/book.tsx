@@ -22,7 +22,8 @@ export const createBooks = async (data: any) => {
 
 export const getBooks = async (params: any) => {
     try {
-        const response = await apiClient.get('book/', params)
+        const queryString = new URLSearchParams(params as Record<string, string>).toString();
+        const response = await apiClient.get(`book/?${queryString}`, params)
         return response
     } catch (error) {
         console.error('Error fetching books:', error)

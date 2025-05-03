@@ -46,9 +46,9 @@ export default function LandingPage() {
       case "activeUsers":
         return <MostActiveSection sortOption={sortOption}/>;
       case "mostReviewed":
-        return <MostReviewedSection  onAddBookClick={() =>  setAddBookModalOpen(true)}/>;
+        return <MostReviewedSection sortOption={sortOption}  onAddBookClick={() =>  setAddBookModalOpen(true)}/>;
       default:
-        return <MostReviewedSection onAddBookClick={() => setAddBookModalOpen(true)}/>;
+        return <MostReviewedSection sortOption={sortOption} onAddBookClick={() => setAddBookModalOpen(true)}/>;
     }
   }
 

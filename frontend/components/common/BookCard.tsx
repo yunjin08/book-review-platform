@@ -227,6 +227,9 @@ export default function BookCard({
                         />
                     ))}
                 </div>
+                <p className="text-xs md:text-[0.85rem] mx-2 text-gray-500 md:mb-2">
+                    {rating_count} review{rating_count && rating_count > 1 ? 's' : ''}
+                </p>
             </div>
 
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -260,7 +263,7 @@ export default function BookCard({
                                     Book Summary
                                 </h3>
                                 <p className="text-sm text-gray-700 mb-2">
-                                    Average Rating: {rating}/5
+                                    Average Rating: {rating.toFixed(2)}/5
                                 </p>
                                 <p className="text-sm text-gray-700 mb-2">
                                     Rating Counts: {rating_count}
