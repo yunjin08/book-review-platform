@@ -67,16 +67,18 @@ export default function MostReviewedSection({
                     <p className="text-gray-500 mb-6">
                         Be the first to add a review!
                     </p>
-                    <Button
-                        className="bg-slate-800 text-white hover:bg-slate-700 text-xs md:text-sm cursor-pointer"
-                        onClick={() => {
-                            onAddBookClick()
-                        }} // Trigger modal
-                    >
-                        <FaBook className="w-3 h-3 md:w-4 md:h-4" />
-                        <span>Add Book</span>
-                        <FaPlus className="ml-3 w-2 h-2 md:w-3 md:h-3" />
-                    </Button>
+                    {isAuthenticated && (
+                        <Button
+                            className="bg-slate-800 text-white hover:bg-slate-700 text-xs md:text-sm cursor-pointer"
+                            onClick={() => {
+                                onAddBookClick()
+                            }} // Trigger modal
+                        >
+                            <FaBook className="w-3 h-3 md:w-4 md:h-4" />
+                            <span>Add Book</span>
+                            <FaPlus className="ml-3 w-2 h-2 md:w-3 md:h-3" />
+                        </Button>
+                    )}
                 </div>
             ) : (
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 w-full">
