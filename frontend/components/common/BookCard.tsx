@@ -16,9 +16,8 @@ import { apiClient } from '@/lib/api'
 import { FaEdit } from 'react-icons/fa'
 import { MdDelete } from 'react-icons/md'
 import { useAuthStore } from '@/store/auth'
-import { toast } from "sonner"
-import { addBookReading } from '@/store/book'
-
+import { toast } from 'sonner'
+import { useCreateBookReadingStore } from '@/store/book'
 
 interface Review {
     id: number
@@ -49,6 +48,8 @@ export default function BookCard({
     coverUrl,
     rating_count,
 }: BookCardProps) {
+    const { create: createBookReading } = useCreateBookReadingStore()
+
     // State for modal visibility
     const [isModalOpen, setIsModalOpen] = useState(false)
     // State for user's new rating
@@ -58,7 +59,7 @@ export default function BookCard({
     // State for review text
     const [reviewText, setReviewText] = useState('')
     // State for the "Read" modal
-    const [isReadModalOpen, setIsReadModalOpen] = useState(false);
+    const [isReadModalOpen, setIsReadModalOpen] = useState(false)
 
     const [editingReviewId, setEditingReviewId] = useState<number | null>(null)
     const [editedReviewText, setEditedReviewText] = useState('')
@@ -122,22 +123,30 @@ export default function BookCard({
     }
 
     const handleAddReading = async () => {
-        setIsReadModalOpen(true);
+        setIsReadModalOpen(true)
         console.log('BookID:', bookId, user, 'user')
-        const date_started = new Date().toISOString().split('T')[0]; // Current date
-        const date_finished = new Date(new Date().setDate(new Date().getDate() + 1))
-            .toISOString()
-            .split('T')[0];  // Add 1 day
-        addBookReading(bookId, date_started, date_finished).then((response) => {
-            console.log('Reading added successfully:', response)
-        }
-        ).catch((error) => {
-            console.error('Error adding reading:', error)
-            toast(`Failed to add reading, ${(error?.detail)?.toLowerCase()}`,{
-                style: {color: 'red'},
-            });
-        }
+        const date_started = new Date().toISOString().split('T')[0] // Current date
+        const date_finished = new Date(
+            new Date().setDate(new Date().getDate() + 1)
         )
+            .toISOString()
+            .split('T')[0] // Add 1 day
+
+        if (createBookReading) {
+            createBookReading({ book: bookId, date_started, date_finished })
+                .then((response) => {
+                    console.log('Reading added successfully:', response)
+                })
+                .catch((error) => {
+                    console.error('Error adding reading:', error)
+                    toast(
+                        `Failed to add reading, ${error?.detail?.toLowerCase()}`,
+                        {
+                            style: { color: 'red' },
+                        }
+                    )
+                })
+        }
     }
 
     const handleSubmitReview = async () => {
@@ -519,7 +528,7 @@ export default function BookCard({
                 </DialogContent>
             </Dialog>
 
-             {/* Read Modal */}
+            {/* Read Modal */}
             <Dialog open={isReadModalOpen} onOpenChange={setIsReadModalOpen}>
                 <DialogContent className="max-w-md text-black bg-white">
                     <DialogHeader>
@@ -529,7 +538,8 @@ export default function BookCard({
                     </DialogHeader>
                     <div className="p-4">
                         <p className="text-sm text-gray-700">
-                            You are reading this Book. This will be added to your read history.
+                            You are reading this Book. This will be added to
+                            your read history.
                         </p>
                     </div>
                     <DialogFooter>

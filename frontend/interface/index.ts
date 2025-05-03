@@ -35,6 +35,26 @@ export interface Book {
     reviews?: Review[]
 }
 
+export interface CreateBookReading {
+    id?: number
+    user?: number // Foreign key ID
+    book?: number // Foreign key ID
+    status?: 'want_to_read' | 'currently_reading' | 'read'
+    date_added?: string
+    date_started?: string | null
+    date_finished?: string | null
+}
+
+export interface BookReading {
+    id: number
+    user: number // Foreign key ID
+    book: Book // Foreign key ID
+    status: 'want_to_read' | 'currently_reading' | 'read'
+    date_added: string
+    date_started?: string | null
+    date_finished?: string | null
+}
+
 export interface Genre {
     id: number
     name: string

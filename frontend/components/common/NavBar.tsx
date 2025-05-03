@@ -8,56 +8,40 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/store/auth'
 import { useRouter } from 'next/navigation'
-import { getBookReadingHistory } from '@/store/book';
-import { getAccessToken } from '@/store/auth';
-import { initApiClient } from '@/lib/api'
-
-interface Book {
-    id: number
-    title: string
-    author: string
-    genres_detail: { id: number; name: string }[]
-    rating: number
-    cover_image: string
-    rating_count: number
-    average_rating: number
-    total_reviews: number
-}
-interface BookReadingHistory {
-    id: number;
-    book: Book[];
-    title: string;
-    author: string;
-    date_added: string;
-    date_finished: string;
-    date_started: string;
-    status: string;
-    user: number;
-}
-
+import { useBookReadingStore } from '@/store/book'
 
 export default function NavBar() {
     // State to track the selected sort option for each filter
 
     const { isAuthenticated, logout } = useAuthStore()
+    const { fetchAll: fetchAllBookReadingHistory, items: bookReadingHistory } =
+        useBookReadingStore()
     const router = useRouter()
 
     // State for the "Read History" modal
-    const [isReadHistoryModalOpen, setIsReadHistoryModalOpen] = useState(false);
-    const [bookReadingHistory, setBookReadingHistory] = useState<BookReadingHistory[]>([])
+    const [isReadHistoryModalOpen, setIsReadHistoryModalOpen] = useState(false)
 
     useEffect(() => {
-            // Check if the user is authenticated
-            getBookReadingHistory().then((response) => {
-                console.log('Book reading history:', response)
-                setBookReadingHistory(response.objects)
-            }).catch((error) => {
-                console.error('Error fetching book reading history:', error)
-            })
+        // Check if the user is authenticated
+        if (fetchAllBookReadingHistory) {
+            fetchAllBookReadingHistory()
+                .then((response) => {
+                    console.log('Book reading history:', response)
+                })
+                .catch((error) => {
+                    console.error('Error fetching book reading history:', error)
+                })
+        }
     }, [])
 
     const exportToCSV = () => {
@@ -71,21 +55,21 @@ export default function NavBar() {
                 entry.date_finished,
                 entry.status,
             ]),
-        ];
+        ]
 
         // Convert rows to CSV string
-        const csvContent = csvRows.map((row) => row.join(',')).join('\n');
+        const csvContent = csvRows.map((row) => row.join(',')).join('\n')
 
         // Create a Blob and download the file
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', 'read_history.csv'); // File name
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', 'read_history.csv') // File name
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+    }
 
     const handleLogout = () => {
         try {
@@ -125,14 +109,18 @@ export default function NavBar() {
                                     <>
                                         <DropdownMenuItem
                                             className="cursor-pointer"
-                                            onClick={() => setIsReadHistoryModalOpen(true)}
+                                            onClick={() =>
+                                                setIsReadHistoryModalOpen(true)
+                                            }
                                         >
                                             View Read History
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
                                             className="cursor-pointer"
                                             onClick={() =>
-                                                console.log('Navigate to ratings')
+                                                console.log(
+                                                    'Navigate to ratings'
+                                                )
                                             }
                                         >
                                             View Ratings
@@ -175,42 +163,69 @@ export default function NavBar() {
                     </button>
                 </div>
             </nav>
-        {/* Read History Modal */}
-        <Dialog open={isReadHistoryModalOpen} onOpenChange={setIsReadHistoryModalOpen}>
-            <DialogContent className="max-w-md text-black bg-white">
-                <DialogHeader>
-                    <DialogTitle className="text-xl font-bold">Read History</DialogTitle>
-                </DialogHeader>
-                <div className="p-4 space-y-4">
-                    {bookReadingHistory.length > 0 ? (
-                        bookReadingHistory.map((entry) => (
-                            <div key={entry.id} className="border-b pb-4 flex items-start gap-4">
-                            <img
-                                src={entry.book.cover_image}
-                                alt={entry.book.title}
-                                className="w-16 h-24 object-cover rounded-md"
-                            />
-                            <div>
-                                <p className="text-sm font-semibold">{entry.book.title}</p>
-                                <p className="text-xs text-gray-500">by {entry.book.author}</p>
-                                <p className="text-xs text-gray-500">Date Started: {entry.date_started}</p>
-                                <p className="text-xs text-gray-500">Date Finished: {entry.date_finished}</p>
-                                <p className="text-xs text-gray-400">Status: {entry.status}</p>
-                            </div>
-                        </div>
-                        ))
-                    ) : (
-                        <p className="text-sm text-gray-500">No books read yet.</p>
-                    )}
-                </div>
-                <DialogFooter>
-                    <Button onClick={() => setIsReadHistoryModalOpen(false)}>Close</Button>
-                    <Button onClick={exportToCSV} className="cursor-pointer">
-                        Export CSV
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    </>
+            {/* Read History Modal */}
+            <Dialog
+                open={isReadHistoryModalOpen}
+                onOpenChange={setIsReadHistoryModalOpen}
+            >
+                <DialogContent className="max-w-md text-black bg-white">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl font-bold">
+                            Read History
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="p-4 space-y-4">
+                        {bookReadingHistory.length > 0 ? (
+                            bookReadingHistory.map((entry) => (
+                                <div
+                                    key={entry.id}
+                                    className="border-b pb-4 flex items-start gap-4"
+                                >
+                                    <img
+                                        src={entry.book.cover_image}
+                                        alt={entry.book.title}
+                                        className="w-16 h-24 object-cover rounded-md"
+                                    />
+                                    <div>
+                                        <p className="text-sm font-semibold">
+                                            {entry.book.title}
+                                        </p>
+                                        <p className="text-xs text-gray-500">
+                                            by {entry.book.author}
+                                        </p>
+                                        <p className="text-xs text-gray-500">
+                                            Date Started: {entry.date_started}
+                                        </p>
+                                        <p className="text-xs text-gray-500">
+                                            Date Finished: {entry.date_finished}
+                                        </p>
+                                        <p className="text-xs text-gray-400">
+                                            Status: {entry.status}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-sm text-gray-500">
+                                No books read yet.
+                            </p>
+                        )}
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            onClick={() => setIsReadHistoryModalOpen(false)}
+                        >
+                            Close
+                        </Button>
+                        <Button
+                            onClick={exportToCSV}
+                            className="cursor-pointer"
+                        >
+                            Export CSV
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     )
 }
