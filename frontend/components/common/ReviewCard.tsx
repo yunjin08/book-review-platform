@@ -1,70 +1,340 @@
-import React from 'react'
-import Image from 'next/image'
-import { FaStar, FaEdit } from 'react-icons/fa'
-import { MdDelete } from 'react-icons/md'
+import { useState, useEffect } from 'react'
+import { Card, CardContent } from '../ui/card'
+import UserStarRating from './UserStarRating'
+import { apiClient } from '@/lib/api'
+import { useAuthStore } from '@/store/auth'
+import { Textarea } from '../ui/textarea'
+import { Button } from '../ui/button'
 
-interface ReviewCardProps {
-    reviewTitle: string
-    bookTitle: string
-    rating: number
-    review: string
-    coverUrl: string
-    onEdit?: () => void
-    onDelete?: () => void
+import { FaStar } from 'react-icons/fa'
+import { FaEdit } from 'react-icons/fa'
+import { MdDelete } from 'react-icons/md'
+import { FaReply } from 'react-icons/fa'
+import { MdSend } from 'react-icons/md'
+import CommentCard from './CommentCard'
+
+interface Comment {
+    id: number
+    username: string
+    body: string
 }
 
-export default function ReviewCard({
-    reviewTitle,
-    bookTitle,
-    rating,
-    review,
-    coverUrl,
-    onEdit,
-    onDelete,
-}: ReviewCardProps) {
+interface Review {
+    id: number
+    user: {
+        id: number
+        username: string
+    }
+    rating: number
+    body: string
+    comments?: Comment[]
+}
+
+interface ReviewCardProps {
+    isModalOpen: boolean
+    bookId: number
+}
+
+const ReviewCard: React.FC<ReviewCardProps> = ({ isModalOpen, bookId }) => {
+    const [editingReviewId, setEditingReviewId] = useState<number | null>(null)
+    const [editedReviewText, setEditedReviewText] = useState('')
+    const [editRating, setEditRating] = useState(0)
+    const [replyingToReviewId, setReplyingToReviewId] = useState(0)
+    const [replyText, setReplyText] = useState('')
+
+    const { user } = useAuthStore()
+
+    const [reviews, setReviews] = useState<
+        {
+            id: number
+            user: {
+                userID: number
+                username: string
+            }
+            rating: number
+            body: string
+            comments: Comment[]
+        }[]
+    >([])
+
+    useEffect(() => {
+        if (isModalOpen) {
+            console.log('BookID:', bookId)
+            const fetchReviews = async () => {
+                try {
+                    const response = await apiClient.get(
+                        `/review/reviews/?book_id=${bookId}`
+                    )
+
+                    console.log('Fetched reviews:', response)
+
+                    const mappedReviews = response.objects.map(
+                        (review: Review) => ({
+                            id: review.id,
+                            user: {
+                                userID: review.user.id,
+                                username: review.user.username,
+                            },
+                            rating: review.rating,
+                            body: review.body,
+                            comments: review.comments || [],
+                        })
+                    )
+
+                    setReviews(mappedReviews)
+                } catch (error) {
+                    console.error('Error fetching reviews:', error)
+                }
+            }
+
+            fetchReviews()
+        }
+    }, [isModalOpen, bookId])
+
+    const handleDeleteReview = async (reviewId: number) => {
+        try {
+            await apiClient.delete(`/review/reviews/${reviewId}/`)
+            setReviews((prevReviews) =>
+                prevReviews.filter((review) => review.id !== reviewId)
+            )
+            console.log('Review deleted successfully')
+        } catch (error) {
+            console.error('Error deleting review:', error)
+            alert('Failed to delete review. Please try again.')
+        }
+    }
+
+    const handleEditReview = (
+        reviewId: number,
+        currentBody: string,
+        currentRating: number
+    ) => {
+        setEditingReviewId(reviewId)
+        setEditedReviewText(currentBody)
+        setEditRating(currentRating)
+    }
+
+    const handleSaveEditedReview = async (reviewId: number) => {
+        try {
+            const originalReview = reviews.find((r) => r.id === reviewId)
+            if (!originalReview) return
+
+            await apiClient.put(`/review/reviews/${reviewId}/`, {
+                book: bookId,
+                rating: editRating,
+                body: editedReviewText,
+            })
+
+            setReviews((prev) =>
+                prev.map((r) =>
+                    r.id === reviewId
+                        ? { ...r, body: editedReviewText, rating: editRating }
+                        : r
+                )
+            )
+
+            setEditingReviewId(null)
+            setEditedReviewText('')
+            console.log('Review updated successfully')
+        } catch (error) {
+            console.error('Error updating review:', error)
+            alert('Failed to update review. Please try again.')
+        }
+    }
+
+    const handleReplyClick = (reviewId: number) => {
+        console.log(`Submitted reply to review ${reviewId}:`, replyText)
+        setReplyingToReviewId(reviewId)
+        setReplyText('')
+    }
+
+    const handleReplyCancel = () => {
+        setReplyingToReviewId(0)
+        setReplyText('')
+    }
+
+    const handleReplySubmit = async (reviewId: number) => {
+        try {
+            await apiClient.post(`/review/reviews/${reviewId}/comments/`, {
+                body: replyText,
+                review: reviewId,
+            })
+
+            console.log(`Submitted reply to review ${reviewId}:`, replyText)
+
+            setReplyingToReviewId(0)
+            setReplyText('')
+        } catch (error) {
+            console.error('Error posting comment:', error)
+            alert('Failed to post comment. Please try again.')
+        }
+    }
+
     return (
-        <div className="flex flex-col md:flex-row bg-white rounded-lg shadow-md overflow-hidden hover:scale-[1.02] transition-transform items-center p-2">
-            <div className="relative w-20 md:w-32 h-35 md:h-60 flex-shrink-0">
-                <Image
-                    src={coverUrl}
-                    alt={bookTitle}
-                    layout="fill"
-                    objectFit="cover"
-                />
-            </div>
+        <div className="space-y-4">
+            {reviews.map((review, index) => (
+                <Card key={index} className="p-3 border-slate-500">
+                    <CardContent className="p-0">
+                        <div className="flex flex-col md:flex-row justify-between items-center mb-1">
+                            <span className="font-medium">
+                                <b>{review.user.username}</b>
+                            </span>
+                            {editingReviewId !== review.id && (
+                                <div className="flex items-end">
+                                    <div
+                                        className={
+                                            user &&
+                                            user.id === review.user.userID
+                                                ? 'flex px-3 mr-3 border-r-2 border-slate-400'
+                                                : 'flex px-3'
+                                        }
+                                    >
+                                        {[...Array(5)].map((_, i) => (
+                                            <FaStar
+                                                key={i}
+                                                className={`h-4 w-4 ${
+                                                    i < review.rating
+                                                        ? 'text-yellow-400'
+                                                        : 'text-gray-300'
+                                                }`}
+                                            />
+                                        ))}
+                                    </div>
+                                    {user && user.id === review.user.userID && (
+                                        <>
+                                            <button
+                                                className="mr-2"
+                                                onClick={() =>
+                                                    handleEditReview(
+                                                        review.id,
+                                                        review.body,
+                                                        review.rating
+                                                    )
+                                                }
+                                            >
+                                                <FaEdit className="text-blue-500 hover:text-blue-700 cursor-pointer" />
+                                            </button>
 
-            <div className="flex flex-col p-2 md:p-4 gap-1 md:gap-2 flex-grow">
-                <div className="flex justify-between items-start gap-5">
-                    <p className="font-bold text-sm md:text-lg lg:text-xl text-justify">
-                        {reviewTitle}
-                    </p>
-                    <div className="flex gap-2">
-                        <button onClick={onEdit} aria-label="Edit">
-                            <FaEdit className="text-blue-600 hover:text-blue-800 w-4 h-4 md:w-5 md:h-5 cursor-pointer" />
-                        </button>
-                        <button onClick={onDelete} aria-label="Delete">
-                            <MdDelete className="text-red-600 hover:text-red-800 w-4 h-4 md:w-5 md:h-5 cursor-pointer" />
-                        </button>
+                                            <button
+                                                onClick={() =>
+                                                    handleDeleteReview(
+                                                        review.id
+                                                    )
+                                                }
+                                            >
+                                                <MdDelete className="text-red-500 hover:text-red-700 cursor-pointer" />
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        {editingReviewId === review.id ? (
+                            <>
+                                <UserStarRating
+                                    rating={editRating}
+                                    onChange={setEditRating}
+                                />
+
+                                <div className="flex flex-col space-y-2 mt-2">
+                                    <Textarea
+                                        value={editedReviewText}
+                                        onChange={(e) =>
+                                            setEditedReviewText(e.target.value)
+                                        }
+                                    />
+                                    <div className="flex space-x-2">
+                                        <Button
+                                            size="sm"
+                                            onClick={() =>
+                                                handleSaveEditedReview(
+                                                    review.id
+                                                )
+                                            }
+                                            className="cursor-pointer hover:opacity-90"
+                                        >
+                                            Save
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="secondary"
+                                            onClick={() =>
+                                                setEditingReviewId(null)
+                                            }
+                                            className="cursor-pointer hover:bg-slate-200"
+                                        >
+                                            Cancel
+                                        </Button>
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            <p className="text-sm text-gray-700 mt-2">
+                                {review.body}
+                            </p>
+                        )}
+                    </CardContent>
+
+                    <div className="mt-2">
+                        {review.comments.map((comment) => (
+                            <CommentCard
+                                key={comment.id}
+                                username={comment.username}
+                                body={comment.body}
+                            />
+                        ))}
                     </div>
-                </div>
 
-                <p className="text-xs md:text-sm lg:text-base text-gray-600">
-                    Book: <span className="italic">{bookTitle}</span>
-                </p>
-                <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                        <FaStar
-                            key={i}
-                            className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 ${
-                                i < rating ? 'text-yellow-400' : 'text-gray-300'
-                            }`}
-                        />
-                    ))}
-                </div>
-                <p className="text-xs md:text-sm lg:text-base text-gray-800 text-justify">
-                    {review}
-                </p>
-            </div>
+                    {replyingToReviewId === review.id ? (
+                        <CardContent className="p-3 border rounded-lg border-slate-500">
+                            <div className="flex flex-col space-y-3">
+                                <span className="font-medium">
+                                    <b>{user.username}</b>
+                                </span>
+                                <Textarea
+                                    value={replyText}
+                                    onChange={(e) =>
+                                        setReplyText(e.target.value)
+                                    }
+                                    placeholder="Write your comment..."
+                                    rows={3}
+                                    className="bg-slate-200 border-0 focus:outline-none focus:ring-0"
+                                />
+                                <div className="flex gap-3 justify-end">
+                                    <Button
+                                        size="sm"
+                                        onClick={() =>
+                                            handleReplySubmit(review.id)
+                                        }
+                                        className="text-white hover:opacity-90 cursor-pointer"
+                                    >
+                                        <MdSend className="mr-1" />
+                                        Submit
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        onClick={handleReplyCancel}
+                                        className="text-white hover:opacity-90 cursor-pointer"
+                                    >
+                                        Cancel
+                                    </Button>
+                                </div>
+                            </div>
+                        </CardContent>
+                    ) : (
+                        <Button
+                            size="sm"
+                            onClick={() => handleReplyClick(review.id)}
+                            className="cursor-pointer py-2 hover:opacity-90"
+                        >
+                            <FaReply className="mr-1" />
+                            Comment
+                        </Button>
+                    )}
+                </Card>
+            ))}
         </div>
     )
 }
+
+export default ReviewCard
