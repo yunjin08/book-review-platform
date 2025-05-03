@@ -21,6 +21,8 @@ class BookSerializer(serializers.ModelSerializer):
     )
     created_by = CustomUserSerializer(read_only=True)
     genres_detail = GenreSerializer(source='genres', many=True, read_only=True)
+    average_rating = serializers.FloatField(read_only=True)  # Include average_rating
+    total_reviews = serializers.IntegerField(read_only=True)  # Include total_reviews
 
     class Meta:
         model = Book
@@ -39,7 +41,9 @@ class BookSerializer(serializers.ModelSerializer):
             "updated_at",
             "average_rating",
             "total_reviews",
-            "reviews",  # Add reviews to the response
+            "reviews",
+            "average_rating",
+            "total_reviews",
         ]
         read_only_fields = ["created_at", "created_by"]
 

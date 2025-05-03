@@ -15,7 +15,10 @@ interface Book {
     author: string
     genres_detail: { id: number; name: string }[]
     rating: number
-    coverUrl: string
+    cover_image: string
+    rating_count: number
+    average_rating: number
+    total_reviews: number
 }
 
 export default function MostReviewedSection({
@@ -28,6 +31,7 @@ export default function MostReviewedSection({
     const [isLoading, setIsLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
 
+    console.log(books, 'bookss')
     useEffect(() => {
         if (!isAuthenticated) {
             console.error(
@@ -111,8 +115,9 @@ export default function MostReviewedSection({
                             title={book.title}
                             author={book.author}
                             genres={book.genres_detail || []}
-                            rating={book.rating || 0}
-                            coverUrl={book.coverUrl || '/logo.png'}
+                            rating={book.average_rating || 0}
+                            rating_count={book.total_reviews || 0}
+                            coverUrl={book.cover_image || '/logo.png'}
                         />
                     ))}
                 </div>
