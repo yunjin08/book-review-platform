@@ -4,6 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from django.db.models import Avg
 from django.db.models.signals import post_migrate  # Add this import
 from django.dispatch import receiver
+from rest_framework import status
 
 DEFAULT_GENRES = [
     "Mystery",
@@ -65,13 +66,3 @@ class Book(models.Model):
         
     def __str__(self):
         return self.title
-    
-    @property
-    def average_rating(self):
-        """Calculate the average rating for this book"""
-        return self.reviews.aggregate(Avg('rating'))['rating__avg'] or 0
-    
-    @property
-    def total_reviews(self):
-        """Get the total number of reviews for this book"""
-        return self.reviews.count()

@@ -1,7 +1,7 @@
 import { apiClient, axiosInstance, initApiClient } from './api'
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
-import { getAccessToken, clearTokens } from '@/store/auth'
-
+import { useAuthStore } from '@/store/auth'
+import { clearTokens, getToken } from '@/utils/token'
 // Check if the URL matches a public endpoint that doesn't need authentication
 const isPublicEndpoint = (url?: string): boolean => {
     if (!url) return false
@@ -10,6 +10,7 @@ const isPublicEndpoint = (url?: string): boolean => {
         '/account/authenticate/',
         '/account/verify-token/',
         '/account/logout/',
+        '/account/refresh-token/',
     ]
     return publicEndpoints.some((endpoint) => url.endsWith(endpoint))
 }
@@ -36,7 +37,10 @@ const handleLogout = async (): Promise<void> => {
 
     // Redirect to login page
     if (typeof window !== 'undefined') {
-        window.location.href = '/login'
+        const currentPath = window.location.pathname
+        if (currentPath !== '/') {
+            window.location.href = '/login'
+        }
     }
 }
 
@@ -48,9 +52,9 @@ const requestInterceptor = async (
         return reqConfig
     }
 
-    const accessToken = getAccessToken()
-    if (accessToken && reqConfig.headers) {
-        reqConfig.headers.Authorization = `Bearer ${accessToken}`
+    const { token } = getToken()
+    if (token && reqConfig.headers) {
+        reqConfig.headers.Authorization = `Bearer ${token}`
     }
     return reqConfig
 }
@@ -83,9 +87,37 @@ const responseErrorInterceptor = async (
         return Promise.reject(error)
     }
 
-    // If we get a 401, just logout the user
-    await handleLogout()
-    return Promise.reject(error)
+    // Mark as retry attempted
+    if (originalRequest.headers) {
+        originalRequest.headers._retry = true
+    }
+
+    try {
+        // Try to refresh the token
+        const refreshed = await useAuthStore.getState().refreshToken()
+
+        console.log('REFRESHED', refreshed)
+
+        if (refreshed) {
+            // If token refresh was successful, update the authorization header
+            const { token } = getToken()
+            console.log('TOKEN', token)
+            if (token && axiosInstance) {
+                originalRequest.headers.Authorization = `Bearer ${token}`
+                return axiosInstance(originalRequest)
+            }
+        }
+
+        // If refresh failed or we couldn't get the new token
+        console.log("REFRESHED FAILED OR COULDN'T GET NEW TOKEN")
+        await handleLogout()
+        return Promise.reject(error)
+    } catch (refreshError) {
+        console.error('Error refreshing token:', refreshError)
+        console.log('ERROR REFRESHING TOKEN')
+        await handleLogout()
+        return Promise.reject(error)
+    }
 }
 
 // Initialize API with interceptors
@@ -96,6 +128,7 @@ export const initApiWithAuth = (baseURL: string): void => {
             'Content-Type': 'application/json',
         },
     })
+    console.log('INITIALIZED API WITH AUTH IN API CLIENT')
 
     // Add interceptors to the axios instance
     if (axiosInstance) {

@@ -12,9 +12,21 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
 import { apiClient } from '@/lib/api'
+import { toast } from 'sonner'
+import { useCreateBookReadingStore } from '@/store/book'
+import { useBookReadingStore } from '@/store/book'
 import UserStarRating from './UserStarRating'
 import ReviewCard from './ReviewCard'
-import { toast } from 'sonner'
+
+interface Review {
+    id: number
+    user: {
+        id: number
+        username: string
+    }
+    rating: number
+    body: string
+}
 
 interface BookCardProps {
     bookId: number
@@ -35,12 +47,18 @@ export default function BookCard({
     coverUrl,
     rating_count,
 }: BookCardProps) {
+    const { create: createBookReading } = useCreateBookReadingStore()
+    const { fetchAll: fetchAllBookReadingHistory, items: bookReadingHistory } =
+        useBookReadingStore()
+
     // State for modal visibility
     const [isModalOpen, setIsModalOpen] = useState(false)
     // State for user's new rating
     const [newRating, setNewRating] = useState(0)
     // State for review text
     const [reviewText, setReviewText] = useState('')
+    // State for the "Read" modal
+    const [isReadModalOpen, setIsReadModalOpen] = useState(false)
 
     const handleSubmitReview = async () => {
         try {
@@ -64,6 +82,35 @@ export default function BookCard({
         }
     }
 
+    const handleAddReading = async () => {
+        setIsReadModalOpen(true)
+        const date_started = new Date().toISOString().split('T')[0] // Current date
+        const date_finished = new Date(
+            new Date().setDate(new Date().getDate() + 1)
+        )
+            .toISOString()
+            .split('T')[0] // Add 1 day
+
+        if (createBookReading) {
+            createBookReading({ book: bookId, date_started, date_finished })
+                .then((response) => {
+                    console.log('Reading added successfully:', response)
+                    if (fetchAllBookReadingHistory) {   
+                        fetchAllBookReadingHistory()
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error adding reading:', error)
+                    toast(
+                        `Failed to add reading, ${error?.detail?.toLowerCase()}`,
+                        {
+                            style: { color: 'red' },
+                        }
+                    )
+                })
+        }
+    }
+
     return (
         <>
             <div
@@ -74,7 +121,6 @@ export default function BookCard({
                     <img
                         src={coverUrl}
                         alt={title}
-                        layout="fill"
                         className="rounded-md mb-4 w-full h-64  object-cover"
                     />
                 </div>
@@ -97,6 +143,10 @@ export default function BookCard({
                         />
                     ))}
                 </div>
+                <p className="text-xs md:text-[0.85rem] mx-2 text-gray-500 md:mb-2">
+                    {rating_count} review
+                    {rating_count && rating_count > 1 ? 's' : ''}
+                </p>
             </div>
 
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -118,7 +168,6 @@ export default function BookCard({
                                     <img
                                         src={coverUrl}
                                         alt={title}
-                                        layout="fill"
                                         className="rounded-md mb-4 w-full h-64  object-cover"
                                     />
                                 </div>
@@ -128,7 +177,7 @@ export default function BookCard({
                                     Book Summary
                                 </h3>
                                 <p className="text-sm text-gray-700 mb-2">
-                                    Average Rating: {rating}/5
+                                    Average Rating: {rating.toFixed(2)}/5
                                 </p>
                                 <p className="text-sm text-gray-700 mb-2">
                                     Rating Counts: {rating_count}
@@ -145,6 +194,12 @@ export default function BookCard({
                                         />
                                     ))}
                                 </div>
+                                <Button
+                                    className="mt-4"
+                                    onClick={() => handleAddReading()}
+                                >
+                                    Read
+                                </Button>
                             </div>
                         </div>
 
@@ -183,6 +238,28 @@ export default function BookCard({
                             disabled={newRating === 0 || !reviewText.trim()}
                         >
                             Submit Review
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Read Modal */}
+            <Dialog open={isReadModalOpen} onOpenChange={setIsReadModalOpen}>
+                <DialogContent className="max-w-md text-black bg-white">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl font-bold">
+                            Reading Confirmation
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="p-4">
+                        <p className="text-sm text-gray-700">
+                            You are reading this Book. This will be added to
+                            your read history.
+                        </p>
+                    </div>
+                    <DialogFooter>
+                        <Button onClick={() => setIsReadModalOpen(false)}>
+                            Close
                         </Button>
                     </DialogFooter>
                 </DialogContent>

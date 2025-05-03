@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser
+from .models import CustomUser, ReadingList
 
 @admin.register(CustomUser)
 class CustomUserAdmin(admin.ModelAdmin):
@@ -29,3 +29,5 @@ class CustomUserAdmin(admin.ModelAdmin):
             return self.readonly_fields + ("password",)
         return self.readonly_fields
     
+
+admin.site.register(ReadingList)

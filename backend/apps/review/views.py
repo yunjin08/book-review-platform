@@ -7,9 +7,12 @@ from .models import Review, Comment
 from .serializer import ReviewSerializer, CommentSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
+from django.db.models import Avg
 
 class ReviewView(GenericView):
-    queryset = Review.objects.select_related('user', 'book')
+    queryset = Review.objects.select_related('user', 'book').annotate(
+        average_rating=Avg('book__reviews__rating')  # Annotate average_rating
+    )
     serializer_class = ReviewSerializer
 
     def get_queryset(self):
@@ -73,7 +76,6 @@ class ReviewView(GenericView):
 class CommentView(GenericView):
     queryset = Comment.objects.select_related('user', 'review')
     serializer_class = CommentSerializer
-    # permission_classes = [IsAuthenticated]
 
     def pre_update(self, request, instance):
         if instance.user != request.user:

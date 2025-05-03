@@ -39,8 +39,6 @@ class BookSerializer(serializers.ModelSerializer):
             "created_by",
             "created_at",
             "updated_at",
-            "average_rating",
-            "total_reviews",
             "reviews",
             "average_rating",
             "total_reviews",

@@ -25,9 +25,9 @@ export default function UserCard({
                     className="w-24 h-24 rounded-full object-cover"
                 />
             </div>
-            <h3 className="text-xs md:text-lg font-bold mb-1">{name}</h3>
-            <p className="text-xs md:text-lg text-gray-700 mb-2">{bio}</p>
-            <p className="text-xs md:text-lg text-gray-500">
+            <h3 className="text-xs md:text-xl font-bold text-gray-700">{name}</h3>
+            <p className="text-xs md:text-[1rem] text-gray-700">{bio}</p>
+            <p className="text-xs md:text-[1rem] text-gray-500">
                 Reviews: {reviewsCount}
             </p>
         </div>

@@ -18,13 +18,46 @@ export interface User {
 export interface Book {
     id: number
     title: string
-    genre: string
+    genres_detail: Genre[]
+    description: string
+    isbn: string
     author: string
-    rating: number // to be changed when json
+    publication_date: string
+    created_by: User
+    created_at: string
+    updated_at: string
+    rating?: number // to be changed when json
+    total_reviews?: number
     cover_image: string
     // Properties likely from your Book model
     average_rating?: number
     reviews_count?: number
+    reviews?: Review[]
+}
+
+export interface CreateBookReading {
+    id?: number
+    user?: number // Foreign key ID
+    book?: number // Foreign key ID
+    status?: 'want_to_read' | 'currently_reading' | 'read'
+    date_added?: string
+    date_started?: string | null
+    date_finished?: string | null
+}
+
+export interface BookReading {
+    id: number
+    user: number // Foreign key ID
+    book: Book // Foreign key ID
+    status: 'want_to_read' | 'currently_reading' | 'read'
+    date_added: string
+    date_started?: string | null
+    date_finished?: string | null
+}
+
+export interface Genre {
+    id: number
+    name: string
 }
 
 export interface ReadingList {

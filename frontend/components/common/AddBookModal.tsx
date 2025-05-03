@@ -17,8 +17,8 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { createBooks, getGenre } from '@/services/book'
 import { toast } from 'sonner'
+import { useBookStore, useGenreStore } from '@/store/book'
 
 interface BookFormData {
     title: string
@@ -47,7 +47,8 @@ export default function AddBookModal({
     open,
     setOpen,
 }: AddBookModalProps) {
-    const [genres, setGenres] = useState<Genre[]>([])
+    const { create: createBook } = useBookStore()
+    const { fetchAll: fetchAllGenres, items: genres } = useGenreStore()
 
     const [formData, setFormData] = useState({
         title: '',
@@ -73,9 +74,9 @@ export default function AddBookModal({
 
     useEffect(() => {
         try {
-            getGenre({}).then((result) => {
-                setGenres(result.objects)
-            })
+            if (fetchAllGenres) {
+                fetchAllGenres()
+            }
         } catch (error) {
             console.error('Error fetching genres:', error)
         }
@@ -109,20 +110,22 @@ export default function AddBookModal({
             genres: formData.genres ? [formData.genres] : [],
         }
 
-        const result = createBooks(parsedData)
-
-        console.log('Submitting from modal:', parsedData, result)
-        onSubmit(parsedData)
-        // setOpen(false);
-
-        console.log('Submitting from modal:', parsedData, result)
-        onSubmit(parsedData)
-        toast(`Submitted a book successfully`, {
-            style: { color: 'green' },
-        })
-        setOpen(false)
-
-        window.location.reload()
+        if (createBook) {
+            try {
+                const result = createBook(parsedData)
+                console.log('Submitting from modal:', parsedData, result)
+                onSubmit(parsedData)
+                toast(`Submitted a book successfully`, {
+                    style: { color: 'green' },
+                })
+            } catch (error) {
+                toast(`Submitted a book unsuccessfully`, {
+                    style: { color: 'red' },
+                })
+            } finally {
+                setOpen(false)
+            }
+        }
     }
 
     return (

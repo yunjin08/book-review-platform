@@ -1,77 +1,53 @@
 'use client'
-import React, { useEffect, lazy, useState } from 'react'
-import { getBooks } from '@/services/book'
-import { initApiClient } from '@/lib/api'
-import { getAccessToken } from '@/store/auth'
-import { useAuthStore } from '@/store/auth'
+import React, { useEffect, lazy } from 'react'
 import { Button } from '@/components/ui/button'
 import { FaBook, FaPlus } from 'react-icons/fa'
+import { useBookStore } from '@/store/book'
+import { Book } from '@/interface'
+import { useAuthStore } from '@/store/auth'
 
 const BookCard = lazy(() => import('../common/BookCard'))
 
-interface Book {
-    id: number
-    title: string
-    author: string
-    genres_detail: { id: number; name: string }[]
-    rating: number
-    cover_image: string
-    rating_count: number
-    average_rating: number
-    total_reviews: number
-}
-
 export default function MostReviewedSection({
+    sortOption,
     onAddBookClick,
 }: {
+    sortOption: { [key: string]: string }
     onAddBookClick: () => void
 }) {
     const { isAuthenticated } = useAuthStore()
-    const [books, setBooks] = useState<Book[]>([])
-    const [isLoading, setIsLoading] = useState<boolean>(true)
-    const [error, setError] = useState<string | null>(null)
+    const {
+        fetchAll: fetchAllBooks,
+        isLoading,
+        error,
+        items: books,
+    } = useBookStore()
 
-    console.log(books, 'bookss')
     useEffect(() => {
-        if (!isAuthenticated) {
-            console.error(
-                'User is not authenticated or access token is missing'
-            )
-            return
+        const orderBy =
+            sortOption['mostReviewed'] === 'most'
+                ? '-total_reviews'
+                : 'total_reviews'
+        const params = {
+            order_by: orderBy, // Dynamic ordering
         }
-        const accessToken = getAccessToken()
-
-        initApiClient({
-            baseURL:
-                process.env.NEXT_PUBLIC_API_BASE_URL ||
-                'http://localhost:8000/api/v1/',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken.token}`,
-            },
-        })
-    }, [])
+        if (isAuthenticated && fetchAllBooks) {
+            try {
+                fetchAllBooks(params)
+            } catch (err) {
+                console.error('Error fetching books:', err)
+            }
+        }
+    }, [fetchAllBooks, sortOption, isAuthenticated])
 
     useEffect(() => {
-        setIsLoading(true)
-        getBooks({})
-            .then((result) => {
-                console.log('Fetched books:', result.objects)
-                setBooks(result.objects)
-            })
-            .catch((err) => {
-                console.error('Failed to fetch books:', err)
-                setError('Failed to load books. Please try again later.')
-            })
-            .finally(() => {
-                setIsLoading(false)
-            })
-    }, [])
+        console.log('BOOKS HERE', books)
+    }, [books])
 
     return (
         <div className="flex flex-col w-full text-black px-3 md:px-24 xl:px-72 pt-4 md:pt-8 pb-8 md:pb-16">
             <p className="text-2xl md:text-4xl font-bold mb-4">
-                Most Reviewed Books
+                Reviewed Books
             </p>
             <p className="text-xs md:text-lg text-justify mb-4">
                 These are the books that everyone&apos;s had something to say
@@ -87,7 +63,9 @@ export default function MostReviewedSection({
                 </div>
             ) : error ? (
                 <div className="w-full text-center py-64">
-                    <p className="text-lg text-red-500">{error}</p>
+                    <p className="text-lg text-red-500">
+                        {error.name}: {error.message}
+                    </p>
                 </div>
             ) : books.length === 0 ? (
                 <div className="w-full text-center py-64 border-2 border-dashed border-gray-300 rounded-lg">
@@ -95,16 +73,18 @@ export default function MostReviewedSection({
                     <p className="text-gray-500 mb-6">
                         Be the first to add a review!
                     </p>
-                    <Button
-                        className="bg-slate-800 text-white hover:bg-slate-700 text-xs md:text-sm cursor-pointer"
-                        onClick={() => {
-                            onAddBookClick()
-                        }} // Trigger modal
-                    >
-                        <FaBook className="w-3 h-3 md:w-4 md:h-4" />
-                        <span>Add Book</span>
-                        <FaPlus className="ml-3 w-2 h-2 md:w-3 md:h-3" />
-                    </Button>
+                    {isAuthenticated && (
+                        <Button
+                            className="bg-slate-800 text-white hover:bg-slate-700 text-xs md:text-sm cursor-pointer"
+                            onClick={() => {
+                                onAddBookClick()
+                            }} // Trigger modal
+                        >
+                            <FaBook className="w-3 h-3 md:w-4 md:h-4" />
+                            <span>Add Book</span>
+                            <FaPlus className="ml-3 w-2 h-2 md:w-3 md:h-3" />
+                        </Button>
+                    )}
                 </div>
             ) : (
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 w-full">

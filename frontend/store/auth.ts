@@ -1,19 +1,8 @@
 import { create } from 'zustand'
 import { apiClient, axiosInstance } from '../lib/api'
-import Cookies from 'js-cookie'
 import { User } from '@/interface'
+import { saveTokens, clearTokens, getToken } from '@/utils/token'
 
-// STORAGE_KEYS for token management
-const STORAGE_KEYS = {
-    TOKENS: 'auth_tokens',
-}
-
-// Authentication tokens interface
-export interface AuthTokens {
-    access: string
-    access_expiration?: string
-    email?: string
-}
 
 // Auth state interface for the store
 interface AuthState {
@@ -27,6 +16,7 @@ interface AuthState {
     login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>
     register: (data: RegisterData) => Promise<void>
     logout: () => Promise<void>
+    refreshToken: () => Promise<boolean>
     verifyToken: (token?: string, email?: string) => Promise<boolean>
     loadUserFromCookies: () => Promise<void>
     getProfile: (id: string) => Promise<void>
@@ -42,40 +32,7 @@ export interface RegisterData {
     password: string
 }
 
-// Get access token from cookies
-export const getAccessToken = (): {
-    token: string | null
-    email: string | null
-} => {
-    const tokens = Cookies.get(STORAGE_KEYS.TOKENS)
-    if (tokens) {
-        try {
-            const parsed = JSON.parse(tokens)
-            return {
-                token: parsed.access || null,
-                email: parsed.email || null,
-            }
-        } catch (e) {
-            console.error('Failed to parse tokens cookie', e)
-            return { token: null, email: null }
-        }
-    }
-    return { token: null, email: null }
-}
 
-// Save tokens to cookies
-export const saveTokens = (tokens: AuthTokens): void => {
-    Cookies.set(STORAGE_KEYS.TOKENS, JSON.stringify(tokens), {
-        expires: 7,
-        path: '/',
-        sameSite: 'Lax',
-    })
-}
-
-// Clear tokens from cookies
-export const clearTokens = (): void => {
-    Cookies.remove(STORAGE_KEYS.TOKENS)
-}
 
 // Auth store using Zustand
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -89,11 +46,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         try {
             const response = await apiClient.post<{
                 token: string
+                refresh: string
                 user: User
             }>('/account/authenticate/', { username, password })
 
             saveTokens({
                 access: response.token,
+                refresh: response.refresh,
                 email: response.user.email,
             })
 
@@ -120,11 +79,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         try {
             const response = await apiClient.post<{
                 token: string
+                refresh: string
                 user: User
             }>('/account/registration/', data)
 
             saveTokens({
                 access: response.token,
+                refresh: response.refresh,
                 email: response.user.email,
             })
 
@@ -169,7 +130,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     },
 
     verifyToken: async (token?: string, email?: string) => {
-        const { token: storedToken, email: storedEmail } = getAccessToken()
+        const { token: storedToken, email: storedEmail } = getToken()
         const tokenToVerify = token || storedToken
         const emailToUse = email || storedEmail
 
@@ -198,19 +159,32 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     },
 
     loadUserFromCookies: async () => {
-        const { token: accessToken, email } = getAccessToken()
+        const { token: accessToken, email } = getToken()
         if (!accessToken || !email) return
 
         set({ isLoading: true })
         try {
             // Verify the token is valid
             const isValid = await get().verifyToken(accessToken, email)
-            set({ isAuthenticated: isValid })
+            
+            if (isValid) {
+                set({ isAuthenticated: true })
+            } else {
+                // Try to refresh the token if validation fails
+                const refreshed = await get().refreshToken()
+                set({ isAuthenticated: refreshed })
+            }
         } catch (error) {
             console.error('AuthStore: Failed to load user from cookies', error)
-            set({
-                isAuthenticated: false,
-            })
+            
+            // Try to refresh the token if there's an error
+            try {
+                const refreshed = await get().refreshToken()
+                set({ isAuthenticated: refreshed })
+            } catch (refreshError) {
+                console.error('AuthStore: Failed to refresh token', refreshError)
+                set({ isAuthenticated: false })
+            }
         }
 
         set({ isLoading: false })
@@ -219,12 +193,38 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     setAPIInitialized: () => {
         set({ isAPIInitialized: true })
     },
+
+    refreshToken: async () => {
+        const { refresh } = getToken()
+        if (!refresh) return false
+
+        try {
+            const response = await apiClient.post<{
+                token: string
+            }>('/account/refresh-token/', { refresh })
+
+            console.log("REFRESHED TOKEN", response)
+            
+            // Only update the access token
+            saveTokens({
+                access: response.token
+            })
+
+            set({ isAuthenticated: true })
+            return true
+        } catch (error) {
+            console.error('Failed to refresh token', error)
+            set({ isAuthenticated: false })
+            return false
+        }
+    },
 }))
 
 // Don't auto-initialize - export an init function instead
 export const initializeAuth = async (): Promise<void> => {
     // This should be called after API client is initialized
     if (typeof window !== 'undefined') {
-        await useAuthStore.getState().loadUserFromCookies()
+        // Load user from cookies
+        await useAuthStore.getState().loadUserFromCookies();
     }
 }
