@@ -42,7 +42,7 @@ export default function LandingPage() {
   const renderActiveSection = () => {
     switch (activeSection) {
       case "bookRate":
-        return <BestRatedSection onAddBookClick={() =>  setAddBookModalOpen(true)}/>;
+        return <BestRatedSection sortOption={sortOption}  onAddBookClick={() =>  setAddBookModalOpen(true)}/>;
       case "activeUsers":
         return <MostActiveSection sortOption={sortOption}/>;
       case "mostReviewed":

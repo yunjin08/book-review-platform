@@ -65,8 +65,3 @@ class Book(models.Model):
         
     def __str__(self):
         return self.title
-    
-    @property
-    def average_rating(self):
-        """Calculate the average rating for this book"""
-        return self.reviews.aggregate(Avg('rating'))['rating__avg'] or 0

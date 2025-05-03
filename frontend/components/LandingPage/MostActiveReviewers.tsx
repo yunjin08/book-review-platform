@@ -23,7 +23,6 @@ export default function MostActiveSection({sortOption}: { sortOption: { [key: st
     const [user, setUsers] = useState<User[]>([])
     const [isLoading, setIsLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
-    const [currentPage, setCurrentPage] = useState<number>(1)
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -82,6 +81,23 @@ export default function MostActiveSection({sortOption}: { sortOption: { [key: st
                 voices here!
             </p>
             <div className="grid min-h-[25rem] grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 w-full">
+                {isLoading && (
+                    <div className="flex items-center justify-center w-full h-full">
+                        <p className="text-lg">Loading...</p>
+                    </div>
+                )}
+                {error && (
+                    <div className="flex items-center justify-center w-full h-full">
+                        <p className="text-lg text-red-500">{error}</p>
+                    </div>
+                )}
+                {user.length === 0 && !isLoading && !error && (
+                    <div className="flex items-center justify-center w-full h-full">
+                        <p className="text-lg text-gray-500">
+                            No users found.
+                        </p>
+                    </div>
+                )}  
                 {user.map((user, index) => (
                     <UserCard
                         key={index}

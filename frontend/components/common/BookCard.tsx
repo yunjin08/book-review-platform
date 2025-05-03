@@ -135,7 +135,7 @@ export default function BookCard({
             setIsModalOpen(false)
         } catch (error) {
             console.error('Error submitting review:', error)
-            toast(`Failed to submit review, ${(error?.detail).toLowerCase()}`,{
+            toast(`Failed to submit review, ${(error?.detail)?.toLowerCase()}`,{
                 style: {color: 'red'},
             });
         }

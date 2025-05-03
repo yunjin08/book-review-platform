@@ -4,13 +4,16 @@ from .serializer import BookSerializer, GenreSerializer, AuthorSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from main.permissions import IsTokenValidated
-from django.db.models import Count
+from django.db.models import Count, Avg
 
 
 # Create your views here.
 class BookView(GenericView):
     permission_classes = [IsTokenValidated]
-    queryset = Book.objects.annotate(total_reviews=Count('reviews'))
+    queryset = Book.objects.annotate(
+        total_reviews=Count('reviews'),  # Annotate total_reviews
+        average_rating=Avg('reviews__rating')  # Annotate average_rating
+    )
     serializer_class = BookSerializer
 
     def get_serializer(self, *args, **kwargs):

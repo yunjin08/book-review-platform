@@ -6,9 +6,12 @@ from main.utils.generic_api import GenericView
 from .models import Review, Comment
 from .serializer import ReviewSerializer, CommentSerializer
 from rest_framework.permissions import IsAuthenticated
+from django.db.models import Avg
 
 class ReviewView(GenericView):
-    queryset = Review.objects.select_related('user', 'book')
+    queryset = Review.objects.select_related('user', 'book').annotate(
+        average_rating=Avg('book__reviews__rating')  # Annotate average_rating
+    )
     serializer_class = ReviewSerializer
 
     def get_queryset(self):

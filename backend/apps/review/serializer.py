@@ -22,7 +22,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         request.data['user'] = request.user.id
 
     def get_average_rating(self, obj):
-        return obj.book.average_rating
+        return obj.book.average_rating if hasattr(obj.book, 'average_rating') else None
     
     def validate_rating(self, value):
         if not 1 <= value <= 5:
