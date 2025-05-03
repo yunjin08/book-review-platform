@@ -18,7 +18,7 @@ interface User {
     reviews_count: number
 }
 
-export default function MostActiveSection() {
+export default function MostActiveSection({sortOption}: { sortOption: { [key: string]: string } }) {
     const { isAuthenticated } = useAuthStore()
     const [user, setUsers] = useState<User[]>([])
     const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -47,10 +47,11 @@ export default function MostActiveSection() {
 
 
     useEffect(() => {
+        const orderBy = sortOption['activeUsers'] === 'most' ? '-reviews_count' : 'reviews_count'
         const params = {
             reviews_count__gt: 0, // Filter users with reviews_count > 0
             // Pagination
-            order_by: '-reviews_count',    // Dynamic ordering
+            order_by: orderBy,    // Dynamic ordering
         };
         setIsLoading(true)
         getUsers(params)
@@ -65,7 +66,7 @@ export default function MostActiveSection() {
             .finally(() => {
                 setIsLoading(false)
             })
-    }, [])
+    }, [sortOption])
 
     return (
         <div className="flex flex-col w-full px-3 text-black md:px-24 xl:px-72 pt-4 md:pt-8 pb-8 md:pb-16">
@@ -80,7 +81,7 @@ export default function MostActiveSection() {
                 see what’s shaping the book world? Check out the most active
                 voices here!
             </p>
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 w-full">
+            <div className="grid min-h-[20rem] grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 w-full">
                 {user.map((user, index) => (
                     <UserCard
                         key={index}
