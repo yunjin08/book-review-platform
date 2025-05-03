@@ -1,4 +1,4 @@
-import React, { useState, useEffect, use } from 'react'
+import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { FaStar } from 'react-icons/fa'
 import {
@@ -54,6 +54,14 @@ export default function BookCard({
     // State for review text
     const [reviewText, setReviewText] = useState('')
 
+    const [editingReviewId, setEditingReviewId] = useState<number | null>(null)
+    const [editedReviewText, setEditedReviewText] = useState('')
+
+    // Add a new state for editing ratings
+    const [editRating, setEditRating] = useState(0)
+    // Add a new state for hover rating while editing
+    const [hoverEditRating, setHoverEditRating] = useState(0)
+
     const [reviews, setReviews] = useState<
         {
             id: number
@@ -103,6 +111,10 @@ export default function BookCard({
         setNewRating(rating)
     }
 
+    const handleEditStarClick = (rating: number) => {
+        setEditRating(rating)
+    }
+
     const handleSubmitReview = async () => {
         try {
             const response = await apiClient.post('/review/reviews/', {
@@ -133,6 +145,44 @@ export default function BookCard({
         } catch (error) {
             console.error('Error deleting review:', error)
             alert('Failed to delete review. Please try again.')
+        }
+    }
+
+    const handleEditReview = (
+        reviewId: number,
+        currentBody: string,
+        currentRating: number
+    ) => {
+        setEditingReviewId(reviewId)
+        setEditedReviewText(currentBody)
+        setEditRating(currentRating)
+    }
+
+    const handleSaveEditedReview = async (reviewId: number) => {
+        try {
+            const originalReview = reviews.find((r) => r.id === reviewId)
+            if (!originalReview) return
+
+            await apiClient.put(`/review/reviews/${reviewId}/`, {
+                book: bookId,
+                rating: editRating,
+                body: editedReviewText,
+            })
+
+            setReviews((prev) =>
+                prev.map((r) =>
+                    r.id === reviewId
+                        ? { ...r, body: editedReviewText, rating: editRating }
+                        : r
+                )
+            )
+
+            setEditingReviewId(null)
+            setEditedReviewText('')
+            console.log('Review updated successfully')
+        } catch (error) {
+            console.error('Error updating review:', error)
+            alert('Failed to update review. Please try again.')
         }
     }
 
@@ -242,63 +292,146 @@ export default function BookCard({
                                                         {review.user.username}
                                                     </b>
                                                 </span>
-                                                <div className="flex items-end">
-                                                    <div
-                                                        className={
-                                                            user &&
+                                                {editingReviewId !==
+                                                    review.id && (
+                                                    <div className="flex items-end">
+                                                        <div
+                                                            className={
+                                                                user &&
+                                                                user.id ===
+                                                                    review.user
+                                                                        .userID
+                                                                    ? 'flex px-3 mr-3 border-r-2 border-slate-400'
+                                                                    : 'flex px-3'
+                                                            }
+                                                        >
+                                                            {[...Array(5)].map(
+                                                                (_, i) => (
+                                                                    <FaStar
+                                                                        key={i}
+                                                                        className={`h-4 w-4 ${
+                                                                            i <
+                                                                            review.rating
+                                                                                ? 'text-yellow-400'
+                                                                                : 'text-gray-300'
+                                                                        }`}
+                                                                    />
+                                                                )
+                                                            )}
+                                                        </div>
+                                                        {user &&
                                                             user.id ===
                                                                 review.user
-                                                                    .userID
-                                                                ? 'flex px-3 mr-3 border-r-2 border-slate-400'
-                                                                : 'flex px-3'
-                                                        }
-                                                    >
+                                                                    .userID && (
+                                                                <>
+                                                                    <button
+                                                                        className="mr-2"
+                                                                        onClick={() =>
+                                                                            handleEditReview(
+                                                                                review.id,
+                                                                                review.body,
+                                                                                review.rating
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        <FaEdit className="text-blue-500 hover:text-blue-700 cursor-pointer" />
+                                                                    </button>
+
+                                                                    <button
+                                                                        onClick={() =>
+                                                                            handleDeleteReview(
+                                                                                review.id
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        <MdDelete className="text-red-500 hover:text-red-700 cursor-pointer" />
+                                                                    </button>
+                                                                </>
+                                                            )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {editingReviewId === review.id ? (
+                                                <>
+                                                    <div className="flex mb-2">
                                                         {[...Array(5)].map(
                                                             (_, i) => (
                                                                 <FaStar
                                                                     key={i}
-                                                                    className={`h-4 w-4 ${
+                                                                    className={`h-5 w-5 cursor-pointer ${
                                                                         i <
-                                                                        review.rating
+                                                                        (hoverEditRating ||
+                                                                            editRating ||
+                                                                            0)
                                                                             ? 'text-yellow-400'
                                                                             : 'text-gray-300'
                                                                     }`}
+                                                                    onClick={() =>
+                                                                        handleEditStarClick(
+                                                                            i +
+                                                                                1
+                                                                        )
+                                                                    }
+                                                                    onMouseEnter={() =>
+                                                                        setHoverEditRating(
+                                                                            i +
+                                                                                1
+                                                                        )
+                                                                    }
+                                                                    onMouseLeave={() =>
+                                                                        setHoverEditRating(
+                                                                            0
+                                                                        )
+                                                                    }
                                                                 />
                                                             )
                                                         )}
                                                     </div>
-                                                    {user &&
-                                                        user.id ===
-                                                            review.user
-                                                                .userID && (
-                                                            <>
-                                                                <button
-                                                                    className="mr-2"
-                                                                    onClick={() =>
-                                                                        console.log(
-                                                                            'Edit button'
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    <FaEdit className="text-blue-500 hover:text-blue-700 cursor-pointer" />
-                                                                </button>
 
-                                                                <button
-                                                                    onClick={() =>
-                                                                        handleDeleteReview(
-                                                                            review.id
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    <MdDelete className="text-red-500 hover:text-red-700 cursor-pointer" />
-                                                                </button>
-                                                            </>
-                                                        )}
-                                                </div>
-                                            </div>
-                                            <p className="text-sm text-gray-700 mt-2">
-                                                {review.body}
-                                            </p>
+                                                    <div className="flex flex-col space-y-2 mt-2">
+                                                        <Textarea
+                                                            value={
+                                                                editedReviewText
+                                                            }
+                                                            onChange={(e) =>
+                                                                setEditedReviewText(
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            }
+                                                        />
+                                                        <div className="flex space-x-2">
+                                                            <Button
+                                                                size="sm"
+                                                                onClick={() =>
+                                                                    handleSaveEditedReview(
+                                                                        review.id
+                                                                    )
+                                                                }
+                                                                className="cursor-pointer hover:opacity-90"
+                                                            >
+                                                                Save
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="secondary"
+                                                                onClick={() =>
+                                                                    setEditingReviewId(
+                                                                        null
+                                                                    )
+                                                                }
+                                                                className="cursor-pointer hover:bg-slate-200"
+                                                            >
+                                                                Cancel
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <p className="text-sm text-gray-700 mt-2">
+                                                    {review.body}
+                                                </p>
+                                            )}
                                         </CardContent>
                                     </Card>
                                 ))}
