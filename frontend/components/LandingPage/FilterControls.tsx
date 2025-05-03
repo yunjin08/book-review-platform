@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { FaBook, FaPlus } from 'react-icons/fa'
 import { useAuthStore } from '@/store/auth'
 
-type Section = 'bookRate' | 'activeUsers' | 'mostReviewed'
+type Section = 'bookRate' | 'activeUsers' | 'mostReviewed' | 'searchBooks'
 
 interface FilterControlsProps {
     activeSection: Section
@@ -28,6 +28,7 @@ export default function FilterControls({
     onAddBookClick,
 }: FilterControlsProps) {
     const { isAuthenticated } = useAuthStore()
+
     const getDropdownOptions = () => {
         switch (activeSection) {
             case 'bookRate':
@@ -45,6 +46,11 @@ export default function FilterControls({
                     { value: 'most', label: 'Most Reviews' },
                     { value: 'least', label: 'Least Reviews' },
                 ]
+            case 'searchBooks':
+                return [
+                    { value: 'ascending', label: 'Ascending Order' },
+                    { value: 'descending', label: 'Descending Order' },
+                ]
             default:
                 return []
         }
@@ -53,36 +59,25 @@ export default function FilterControls({
     return (
         <div className="flex flex-col md:flex-row items-center justify-between px-3 md:px-24 xl:px-48 gap-2 md:gap-4">
             <div className="flex items-center gap-2">
-                <button
-                    className={`px-3 py-1 rounded-md text-xs md:text-sm font-medium transition ${
-                        activeSection === 'bookRate'
-                            ? 'bg-slate-800 text-white'
-                            : 'bg-gray-200 text-slate-800 hover:bg-gray-300'
-                    }`}
-                    onClick={() => onSectionChange('bookRate')}
-                >
-                    Book Rate
-                </button>
-                <button
-                    className={`px-3 py-1 rounded-md text-xs md:text-sm font-medium transition ${
-                        activeSection === 'activeUsers'
-                            ? 'bg-slate-800 text-white'
-                            : 'bg-gray-200 text-slate-800 hover:bg-gray-300'
-                    }`}
-                    onClick={() => onSectionChange('activeUsers')}
-                >
-                    Active Users
-                </button>
-                <button
-                    className={`px-3 py-1 rounded-md text-xs md:text-sm font-medium transition ${
-                        activeSection === 'mostReviewed'
-                            ? 'bg-slate-800 text-white'
-                            : 'bg-gray-200 text-slate-800 hover:bg-gray-300'
-                    }`}
-                    onClick={() => onSectionChange('mostReviewed')}
-                >
-                    Most Reviewed
-                </button>
+                {[
+                    { key: 'searchBooks', label: 'Search Books' },
+                    { key: 'bookRate', label: 'Book Rate' },
+                    { key: 'activeUsers', label: 'Active Users' },
+                    { key: 'mostReviewed', label: 'Most Reviewed' },
+                ].map(({ key, label }) => (
+                    <button
+                        key={key}
+                        className={`px-3 py-1 rounded-md text-xs md:text-sm font-medium transition ${
+                            activeSection === key
+                                ? 'bg-slate-800 text-white'
+                                : 'bg-gray-200 text-slate-800 hover:bg-gray-300'
+                        }`}
+                        onClick={() => onSectionChange(key as Section)}
+                    >
+                        {label}
+                    </button>
+                ))}
+
                 <Select
                     value={sortOption[activeSection]}
                     onValueChange={onSortChange}
@@ -108,7 +103,7 @@ export default function FilterControls({
                 {isAuthenticated && (
                     <Button
                         className="bg-slate-800 text-white hover:bg-slate-700 text-xs md:text-sm flex items-center gap-1 cursor-pointer"
-                        onClick={onAddBookClick} // Trigger modal
+                        onClick={onAddBookClick}
                     >
                         <FaBook className="w-3 h-3 md:w-4 md:h-4" />
                         <span>Add Book</span>

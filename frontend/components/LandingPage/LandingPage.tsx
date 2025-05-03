@@ -6,17 +6,19 @@ import MostReviewedSection from './MostReviewedSection'
 import MostActiveSection from './MostActiveReviewers'
 import Footer from '@/components/common/Footer'
 import FilterControls from './FilterControls'
+import SearchBooksSection from './SearchBooksSection'
 
 const AddBookModal = lazy(() => import('../common/AddBookModal'))
 
-type Section = 'bookRate' | 'activeUsers' | 'mostReviewed'
+type Section = 'bookRate' | 'activeUsers' | 'mostReviewed' | 'searchBooks'
 
 export default function LandingPage() {
-    const [activeSection, setActiveSection] = useState<Section>('mostReviewed')
+    const [activeSection, setActiveSection] = useState<Section>('searchBooks')
     const [sortOption, setSortOption] = useState({
         bookRate: 'highest',
         activeUsers: 'most',
         mostReviewed: 'most',
+        searchBooks: 'ascending',
     })
 
     const [addBookModalOpen, setAddBookModalOpen] = useState(false) // State for modal visibility
@@ -55,9 +57,16 @@ export default function LandingPage() {
                         onAddBookClick={() => setAddBookModalOpen(true)}
                     />
                 )
+            case 'searchBooks':
+                return (
+                    <SearchBooksSection
+                        sortOption={sortOption}
+                        onAddBookClick={() => setAddBookModalOpen(true)}
+                    />
+                )
             default:
                 return (
-                    <MostReviewedSection
+                    <SearchBooksSection
                         sortOption={sortOption}
                         onAddBookClick={() => setAddBookModalOpen(true)}
                     />
