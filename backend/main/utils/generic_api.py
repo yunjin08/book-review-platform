@@ -3,12 +3,13 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
-import json
 from django.shortcuts import get_object_or_404
 from django.core.cache import cache
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.db import transaction
+
+import json
 
 
 class GenericView(viewsets.ViewSet):
@@ -21,6 +22,7 @@ class GenericView(viewsets.ViewSet):
     **Optional attributes**
     - allowed_methods: list of allowed methods (default: ['list', 'retrieve', 'create', 'update', 'delete'])
     - allowed_filter_fields: list of allowed filter fields (default: ['*'])
+    - allowed_update_fields: list of allowed update fields (default: ['*'])
     - size_per_request: number of objects to return per request (default: 20)
     - permission_classes: list of permission classes
     - cache_key_prefix: cache key prefix
@@ -44,8 +46,9 @@ class GenericView(viewsets.ViewSet):
     serializer_class = None  # DRF model serializer class
     size_per_request = 20  # number of objects to return per request
     permission_classes = []  # list of permission classes
-    allowed_methods = ["list", "create", "retrieve", "update", "destroy"]
+    allowed_methods = ["list", "create", "retrieve", "update", "delete"]
     allowed_filter_fields = ["*"]  # list of allowed filter fields
+    allowed_update_fields = ["*"]  # list of allowed update fields
 
     cache_key_prefix = None  # cache key prefix
     cache_duration = 60 * 60  # cache duration in seconds
@@ -58,10 +61,10 @@ class GenericView(viewsets.ViewSet):
     def list(self, request):
         if "list" not in self.allowed_methods:
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
+        self.initialize_queryset(request)
         try:
             filters, excludes = self.parse_query_params(request)
-            top, bottom = self.get_pagination_params(filters)
+            top, bottom, order_by = self.get_pagination_params(filters)
 
             cached_data = None
             if self.cache_key_prefix:
@@ -70,13 +73,15 @@ class GenericView(viewsets.ViewSet):
             if cached_data:
                 return Response(cached_data, status=status.HTTP_200_OK)
 
-            return self.filter(request, filters, excludes, top, bottom)
+            return self.filter(request, filters, excludes, top, bottom, order_by)
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
         if "retrieve" not in self.allowed_methods:
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        self.initialize_queryset(request)
 
         cached_object = None
         if self.cache_key_prefix:
@@ -94,6 +99,8 @@ class GenericView(viewsets.ViewSet):
         if "create" not in self.allowed_methods:
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
+        self.initialize_queryset(request)
+
         self.pre_create(request)
 
         serializer = self.serializer_class(data=request.data)
@@ -110,9 +117,19 @@ class GenericView(viewsets.ViewSet):
     def update(self, request, pk=None):
         if "update" not in self.allowed_methods:
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        
+        self.initialize_queryset(request)
 
         instance = get_object_or_404(self.queryset, pk=pk)
         self.pre_update(request, instance)
+
+        if "*" not in self.allowed_update_fields:
+            for field in request.data.keys():
+                if field not in self.allowed_update_fields:
+                    return Response(
+                        {"error": f"Field {field} is not allowed to update"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
         serializer = self.serializer_class(instance, data=request.data)
         if serializer.is_valid():
@@ -126,8 +143,10 @@ class GenericView(viewsets.ViewSet):
 
     @transaction.atomic
     def destroy(self, request, pk=None):
-        if "destroy" not in self.allowed_methods:
+        if "delete" not in self.allowed_methods:
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        self.initialize_queryset(request)
 
         instance = get_object_or_404(self.queryset, pk=pk)
         self.delete_cache(pk)
@@ -171,8 +190,7 @@ class GenericView(viewsets.ViewSet):
     def invalidate_list_cache(self):
         if not self.cache_key_prefix:
             return
-        # Simple cache invalidation that works with LocMemCache
-        cache.delete(f"{self.cache_key_prefix}_list")
+        cache.delete_pattern(f"{self.cache_key_prefix}_list_*")
 
     def cache_object(self, object_data, pk):
         if not self.cache_key_prefix:
@@ -184,8 +202,10 @@ class GenericView(viewsets.ViewSet):
         return f"{self.cache_key_prefix}_object_{pk}"
 
     def get_list_cache_key(self, filters, excludes, top, bottom):
-        # Simplified cache key that doesn't depend on patterns
-        return f"{self.cache_key_prefix}_list"
+        return (
+            f"{self.cache_key_prefix}_list_{hash(frozenset(filters.items()))}_"
+            f"{hash(frozenset(excludes.items()))}_{top}_{bottom}"
+        )
 
     # Helper methods
     def parse_query_params(self, request):
@@ -196,24 +216,24 @@ class GenericView(viewsets.ViewSet):
             values = [v.strip() for v in value.rstrip(",").split(",") if v.strip()]
             return values if len(values) > 1 else values[0] if values else None
 
+        def parse_value(value):
+            if "," in value:
+                return parse_list_parameter(value)
+            try:
+                return json.loads(value)
+            except json.JSONDecodeError:
+                return value  # Return as plain string if not valid JSON
+
         for key, value in request.query_params.items():
             if key.startswith("exclude__"):
-                parsed_value = (
-                    parse_list_parameter(value)
-                    if "," in value
-                    else json.loads(value.strip())
-                )
-                excludes[key[8:]] = parsed_value
+                parsed_value = parse_value(value)
+                excludes[key[9:]] = parsed_value
             else:
-                parsed_value = (
-                    parse_list_parameter(value)
-                    if "," in value
-                    else json.loads(value.strip())
-                )
-                if parsed_value is not None and (
+                if (
                     key in self.allowed_filter_fields
                     or "*" in self.allowed_filter_fields
                 ):
+                    parsed_value = parse_value(value)
                     filters[key] = parsed_value
 
         return filters, excludes
@@ -221,6 +241,8 @@ class GenericView(viewsets.ViewSet):
     def get_pagination_params(self, filters):
         page = filters.pop("page", None)
         top = int(filters.pop("top", 0))
+        order_by = filters.pop("order_by", None)
+
         if page is not None:
             top = (int(page) - 1) * self.size_per_request
         bottom = filters.pop("bottom", None)
@@ -228,15 +250,19 @@ class GenericView(viewsets.ViewSet):
             bottom = int(bottom)
         else:
             bottom = top + self.size_per_request
-        return top, bottom
+        return top, bottom, order_by
 
     def filter_queryset(self, filters, excludes):
         filter_q = Q(**filters)
         exclude_q = Q(**excludes)
+        
         return self.queryset.filter(filter_q).exclude(exclude_q)
 
-    def filter(self, request, filters, excludes, top, bottom):
+    def filter(self, request, filters, excludes, top, bottom, order_by=None):
         queryset = self.filter_queryset(filters, excludes)
+
+        if order_by:
+            queryset = queryset.order_by(order_by)
 
         paginator = Paginator(queryset, self.size_per_request)
         page_number = (top // self.size_per_request) + 1
@@ -258,3 +284,6 @@ class GenericView(viewsets.ViewSet):
     def get_serialized_object(self, pk):
         instance = get_object_or_404(self.queryset, pk=pk)
         return self.serializer_class(instance).data
+
+    def initialize_queryset(self, request):
+        pass
