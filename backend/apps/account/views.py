@@ -20,7 +20,6 @@ from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from jwt.exceptions import InvalidTokenError, ExpiredSignatureError
 from rest_framework import status
 
-
 class UserView(GenericView):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
@@ -187,8 +186,16 @@ class RegistrationView(APIView):
 class LogoutView(APIView):
     permission_classes = [AllowAny]
     def post(self, request, format=None):
-        # In JWT, logout is handled client-side by removing the token
-        # We can add any server-side cleanup here if needed
+        # Accept 'refresh' token in POST data to blacklist it for logout
+        refresh_token = request.data.get('refresh')
+        if refresh_token is not None:
+            try:
+                refresh = RefreshToken(refresh_token)
+                # Attempt to blacklist the refresh token
+                refresh.blacklist()
+            except Exception:
+                # Silently ignore any error (e.g., blacklist app not enabled or token already blacklisted)
+                pass
         return Response({"message": "Successfully logged out"})
 
 class TokenVerificationView(APIView):
