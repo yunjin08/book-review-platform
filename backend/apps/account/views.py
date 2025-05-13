@@ -149,8 +149,11 @@ class RegistrationView(APIView):
 
         try:
             user = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
+            user = None
         except Exception as e:
-            print("CustomUser Query Error:", e)
+            # For any unrelated error, do not leak details
+            user = None
 
         if user is None:
             username = request_data["username"]
@@ -166,8 +169,6 @@ class RegistrationView(APIView):
                 password=password,
             )
 
-            print(f"Google User {user.username} Successfully Created!")
-
             # Generate JWT token using SimpleJWT
             refresh = RefreshToken.for_user(user)
             token = str(refresh.access_token)
@@ -175,14 +176,20 @@ class RegistrationView(APIView):
             # Serialize user data
             user_serializer = CustomUserSerializer(user)
 
+            # Always return a generic registration response for both paths
             return Response({
+                "success": True,
+                "detail": "If registration was successful, you will receive further instructions.",
                 "token": token,
                 "refresh": str(refresh),
                 "user": user_serializer.data
-            })
+            }, status=201)
         else:
-            print(f"User {user.username} Already Exists!")
-            return Response({"error": "User already exists"}, status=409)
+            # For existing user, mimic the successful registration response (CWE-203 mitigation)
+            return Response({
+                "success": True,
+                "detail": "If registration was successful, you will receive further instructions."
+            }, status=201)
 
 class LogoutView(APIView):
     permission_classes = [AllowAny]
