@@ -2,11 +2,21 @@ from .models import CustomUser, ReadingList
 from rest_framework import serializers
 from apps.book.models import Book
 
-
 class CustomUserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=False)
+
     class Meta:
         model = CustomUser
-        fields = "__all__"
+        fields = [
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'email',
+        ]
+        extra_kwargs = {
+            'password': {'write_only': True},
+        }
 
 class ReadingListSerializer(serializers.ModelSerializer):
     book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
@@ -44,7 +54,6 @@ class ReadingListSerializer(serializers.ModelSerializer):
 class AuthenticationSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=512)
     password = serializers.CharField(max_length=512)
-
 
 class RegistrationSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=512)
