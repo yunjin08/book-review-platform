@@ -34,8 +34,6 @@ class IsTokenValidated(BasePermission):
             access_token = AccessToken(token)
             payload = access_token.payload
             
-            logger.debug(f"payload: {payload}")
-            
             # Store the user in the request for later use
             request.user = CustomUser.objects.get(id=payload['user_id'])
             logger.info('Token successfully verified')
@@ -59,4 +57,4 @@ class IsTokenValidated(BasePermission):
             raise AuthenticationFailed(
                 str(e),
                 code=status.HTTP_401_UNAUTHORIZED
-            ) 
+            )
