@@ -30,7 +30,10 @@ class ReviewView(GenericView):
         # Update user's review count
         instance.user.update_counts()
         
-    def pre_destroy(self, instance):
+    def pre_destroy(self, request, instance):
+        # Only allow users to delete their own reviews
+        if instance.user != request.user:
+            raise PermissionDenied("You can only delete your own reviews")
         # Update user's review count when a review is deleted
         instance.user.update_counts()
 
@@ -81,7 +84,6 @@ class CommentView(GenericView):
         if instance.user != request.user:
             raise ("You can only edit your own comments")
     
-    def pre_destroy(self, instance):
+    def pre_destroy(self, request, instance):
         if instance.user != self.request.user:
             raise PermissionDenied("You can only delete your own comments")
-
