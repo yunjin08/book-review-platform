@@ -79,9 +79,8 @@ class CommentView(GenericView):
 
     def pre_update(self, request, instance):
         if instance.user != request.user:
-            raise ("You can only edit your own comments")
+            raise PermissionDenied("You can only edit your own comments")
     
     def pre_destroy(self, instance):
         if instance.user != self.request.user:
             raise PermissionDenied("You can only delete your own comments")
-
