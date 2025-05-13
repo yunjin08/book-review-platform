@@ -25,6 +25,43 @@ interface ApiClientConfig extends Omit<AxiosRequestConfig, 'baseURL'> {
     responseInterceptorErrors?: (error: unknown) => Promise<unknown>
 }
 
+// Function to sanitize any value for safe log output
+function sanitizeForLog(input: unknown): string {
+    let str: string
+
+    if (typeof input === 'string') {
+        str = input
+    } else if (typeof input === 'object' && input !== null) {
+        try {
+            str = JSON.stringify(input)
+        } catch {
+            str = String(input)
+        }
+    } else if (typeof input === 'undefined') {
+        str = 'undefined'
+    } else {
+        str = String(input)
+    }
+    // Remove carriage returns, line feeds, ANSI escape sequences
+    // Remove/control all C0 control chars except tab (9) and space (32)
+    str = str
+        .replace(/[\r\n]+/g, ' ')
+        .replace(
+            // Remove most control chars and basic ANSI escapes
+            // eslint-disable-next-line no-control-regex
+            /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]+/g,
+            ''
+        )
+        .replace(
+            // Very basic ANSI escape pattern removal (not perfect but covers main cases)
+            // Many ANSI escape codes start with ESC [
+            // eslint-disable-next-line no-control-regex
+            /\x1b\[[0-9;]*[A-Za-z]/g,
+            ''
+        )
+    return str
+}
+
 // Function to initialize the API client
 export const initApiClient = (config: ApiClientConfig): void => {
     const {
@@ -68,14 +105,18 @@ export const initApiClient = (config: ApiClientConfig): void => {
 const handleError = (error: any): never => {
     // Using 'any' for now, consider defining a specific error type
     if (error.response) {
-        console.error('API Error:', error.response.data)
+        // Sanitize before logging
+        const safeData = sanitizeForLog(error.response.data)
+        console.error('API Error:', safeData)
         throw error.response.data // Re-throw the specific API error data
     } else if (error.request) {
-        console.error('No response from server:', error.request)
+        const safeRequest = sanitizeForLog(error.request)
+        console.error('No response from server:', safeRequest)
         throw new Error('No response from server')
     } else {
-        console.error('Request error:', error.message)
-        throw new Error(`Request failed: ${error.message}`)
+        const safeMessage = sanitizeForLog(error.message)
+        console.error('Request error:', safeMessage)
+        throw new Error(`Request failed: ${safeMessage}`)
     }
 }
 
