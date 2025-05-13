@@ -7,8 +7,17 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = "__all__"
-        read_only_fields = ['user', 'username' 'created_at', 'updated_at']
+        # Explicitly specify only allowed fields to be exposed via the API
+        fields = [
+            'id',
+            'user',
+            'username',
+            'review',
+            'text',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['user', 'username', 'created_at', 'updated_at']
 
 class ReviewSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer(read_only=True)
@@ -20,7 +29,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only_fields = ['user', 'created_at', 'updated_at', 'comments']
     
     def pre_create(self, request):
-    # Automatically associate reviews with the requesting user
+        # Automatically associate reviews with the requesting user
         request.data['user'] = request.user.id
 
     def get_average_rating(self, obj):
