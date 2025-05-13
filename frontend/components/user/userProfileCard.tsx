@@ -9,19 +9,51 @@ interface UserProfileProps {
     profileImage?: string
 }
 
+// Allow-list of safe remote image hostnames (add others as needed)
+const ALLOWED_IMAGE_HOSTNAMES = [
+    'images.example.com',
+    // 'cdn.yoursite.com',
+]
+
+/**
+ * Checks if the provided URL string is a safe image path.
+ * - Allows local (relative) paths starting with '/'
+ * - Allows remote URLs only from an explicit allowlist of hostnames
+ */
+function isSafeImageSrc(src?: string): boolean {
+    if (!src || typeof src !== 'string') return false
+
+    // Allow relative/local paths
+    if (src.startsWith('/')) return true
+
+    try {
+        const url = new URL(src)
+        return (
+            (url.protocol === 'https:' || url.protocol === 'http:') &&
+            ALLOWED_IMAGE_HOSTNAMES.includes(url.hostname)
+        )
+    } catch {
+        return false // Not a valid URL
+    }
+}
+
 export default function UserProfileCard({
     userId,
     bio = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
     name = 'Helena Meadow',
     profileImage = '/logo.png',
 }: UserProfileProps) {
+    // Strictly validate profileImage against allow-list and local paths
+    const safeProfileImage =
+        isSafeImageSrc(profileImage) ? profileImage : '/placeholder.svg'
+
     return (
         <div className="w-full bg-white shadow-sm border-b px-3 md:px-24 xl:px-72 ">
             <div className="py-6 flex flex-col md:flex-row items-start">
                 <div className="flex-shrink-0 mr-6">
                     <div className="relative w-24 h-24 md:w-52 md:h-52 rounded-full overflow-hidden border-2 border-gray-300 shadow-md">
                         <Image
-                            src={profileImage || '/placeholder.svg'}
+                            src={safeProfileImage}
                             alt={`${name}'s profile`}
                             fill
                             className="object-cover"
