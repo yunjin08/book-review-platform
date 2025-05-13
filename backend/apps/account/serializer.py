@@ -1,7 +1,9 @@
 from .models import CustomUser, ReadingList
 from rest_framework import serializers
 from apps.book.models import Book
+import logging
 
+logger = logging.getLogger(__name__)
 
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -38,8 +40,10 @@ class ReadingListSerializer(serializers.ModelSerializer):
             return super().create(validated_data)
 
         except Exception as e:
-            # Catch any other unexpected errors
-            raise serializers.ValidationError(f"An error occurred while creating the book: {str(e)}")
+            # Log exception details server-side
+            logger.exception("Exception occurred while creating the reading list item.")
+            # Raise a generic error message to the client
+            raise serializers.ValidationError("An internal error occurred while creating the book.")
 
 class AuthenticationSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=512)
