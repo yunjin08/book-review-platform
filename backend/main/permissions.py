@@ -21,7 +21,7 @@ class IsTokenValidated(BasePermission):
         if not auth_header:
             logger.warning('No token provided in request')
             raise AuthenticationFailed(
-                'No token provided',
+                'Invalid authentication credentials',
                 code=status.HTTP_401_UNAUTHORIZED
             )
             
@@ -45,18 +45,18 @@ class IsTokenValidated(BasePermission):
         except ExpiredSignatureError:
             logger.warning('Token has expired')
             raise AuthenticationFailed(
-                'Token has expired',
+                'Invalid authentication credentials',
                 code=status.HTTP_401_UNAUTHORIZED
             )
         except InvalidTokenError:
             logger.warning('Invalid token provided')
             raise AuthenticationFailed(
-                'Invalid token',
+                'Invalid authentication credentials',
                 code=status.HTTP_401_UNAUTHORIZED
             )
         except Exception as e:
             logger.error(f'Unexpected error during token verification: {str(e)}')
             raise AuthenticationFailed(
-                str(e),
+                'Invalid authentication credentials',
                 code=status.HTTP_401_UNAUTHORIZED
-            ) 
+            )
