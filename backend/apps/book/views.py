@@ -22,15 +22,18 @@ class BookView(GenericView):
         return self.serializer_class(*args, **kwargs)
 
     def create(self, request, *args, **kwargs):
-        # Use the get_serializer method to initialize the serializer
-        serializer = self.get_serializer(data=request.data)
+        # Explicitly whitelist allowed fields to prevent mass assignment
+        ALLOWED_FIELDS = ['title', 'description', 'genre', 'author', 'published_date', 'isbn', 'cover_image']
+        allowed_data = {key: value for key, value in request.data.items() if key in ALLOWED_FIELDS}
+
+        serializer = self.get_serializer(data=allowed_data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
-        # Save the serializer instance
-        serializer.save()
+        # Ensure ownership attribution is set securely, do not accept from user input
+        serializer.save(owner=self.request.user)
 
 class GenreView(GenericView):
     queryset = Genre.objects.all()
@@ -39,6 +42,3 @@ class GenreView(GenericView):
 class AuthorView(GenericView):
     queryset = Author.objects.all()
     serializer_class = AuthorSerializer
-
-
-
