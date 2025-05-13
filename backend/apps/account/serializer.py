@@ -37,9 +37,11 @@ class ReadingListSerializer(serializers.ModelSerializer):
             # Create the book instance
             return super().create(validated_data)
 
-        except Exception as e:
-            # Catch any other unexpected errors
-            raise serializers.ValidationError(f"An error occurred while creating the book: {str(e)}")
+        except Exception:
+            # Catch any other unexpected errors without leaking sensitive details
+            raise serializers.ValidationError(
+                "An unexpected error occurred while creating the book. Please try again later."
+            )
 
 class AuthenticationSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=512)
