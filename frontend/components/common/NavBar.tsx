@@ -20,6 +20,27 @@ import { useAuthStore } from '@/store/auth'
 import { useRouter } from 'next/navigation'
 import { useBookReadingStore } from '@/store/book'
 
+/**
+ * Sanitizes a CSV cell to prevent formula injection.
+ * - If the value starts with '=', '+', '-', or '@', prefix with a single quote.
+ * - Escapes/doubles quotes according to CSV standard.
+ * - Wraps all fields in double quotes.
+ */
+function sanitizeCSVCell(value: any) {
+    let cell = String(value ?? '');
+
+    // Prefix with ' if starts with =, +, -, @ (as per CSV formula injection best practice)
+    if (/^[=+\-@]/.test(cell)) {
+        cell = "'" + cell
+    }
+
+    // Escape embedded double quotes by duplicating them
+    cell = cell.replace(/"/g, '""')
+
+    // Always wrap in double quotes
+    return `"${cell}"`
+}
+
 export default function NavBar() {
     // State to track the selected sort option for each filter
 
@@ -46,14 +67,23 @@ export default function NavBar() {
 
     const exportToCSV = () => {
         const csvRows = [
-            ['ID', 'Book ID', 'Date Started', 'Date Finished', 'Status'], // Header row
+            [
+                sanitizeCSVCell('ID'),
+                sanitizeCSVCell('Book ID'),
+                sanitizeCSVCell('Title'),
+                sanitizeCSVCell('Author'),
+                sanitizeCSVCell('Date Started'),
+                sanitizeCSVCell('Date Finished'),
+                sanitizeCSVCell('Status'),
+            ], // Header row (corrected missing columns)
             ...bookReadingHistory.map((entry) => [
-                entry.id,
-                entry.book.title,
-                entry.book.author,
-                entry.date_started,
-                entry.date_finished,
-                entry.status,
+                sanitizeCSVCell(entry.id),
+                sanitizeCSVCell(entry.book.id),
+                sanitizeCSVCell(entry.book.title),
+                sanitizeCSVCell(entry.book.author),
+                sanitizeCSVCell(entry.date_started),
+                sanitizeCSVCell(entry.date_finished),
+                sanitizeCSVCell(entry.status),
             ]),
         ]
 
