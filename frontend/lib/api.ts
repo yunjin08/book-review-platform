@@ -68,7 +68,10 @@ export const initApiClient = (config: ApiClientConfig): void => {
 const handleError = (error: any): never => {
     // Using 'any' for now, consider defining a specific error type
     if (error.response) {
-        console.error('API Error:', error.response.data)
+        // Do not log error.response.data directly to avoid leaking sensitive info
+        const status = error.response.status
+        const statusText = error.response.statusText
+        console.error(`API Error: HTTP ${status} ${statusText}`)
         throw error.response.data // Re-throw the specific API error data
     } else if (error.request) {
         console.error('No response from server:', error.request)
