@@ -100,7 +100,7 @@ export default function BookCard({
                 .catch((error) => {
                     console.error('Error adding reading:', error)
                     toast(
-                        `Failed to add reading, ${error?.detail?.toLowerCase()}`,
+                        'Failed to add reading. Please try again later.',
                         {
                             style: { color: 'red' },
                         }
