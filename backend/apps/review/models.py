@@ -1,5 +1,6 @@
 # reviews/models.py
 from django.db import models
+from django.db.models import F  # NEW: Import F for atomic update
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.translation import gettext_lazy as _
 from apps.account.models import CustomUser
@@ -31,11 +32,9 @@ class Review(models.Model):
         is_new = self.pk is None
         super().save(*args, **kwargs)
         
-        # Update user review count if this is a new review
+        # Update user review count if this is a new review (atomic using F expression)
         if is_new:
-            user = self.user
-            user.reviews_count = user.reviews.count()
-            user.save(update_fields=['reviews_count'])
+            CustomUser.objects.filter(pk=self.user.pk).update(reviews_count=F('reviews_count') + 1)
 
 class Comment(models.Model):
     """Model for comments on reviews"""
