@@ -29,6 +29,11 @@ const CommentCard: React.FC<CommentProps> = ({
     const [isDeleted, setIsDeleted] = useState(false)
 
     const handleDelete = async () => {
+        // Defense-in-depth: Ensure only the comment owner can delete
+        if (!user || user.id !== userID) {
+            alert('You are not authorized to delete this comment.')
+            return
+        }
         try {
             await apiClient.delete(`/review/comments/${commentId}/`)
             setIsDeleted(true)
@@ -39,6 +44,11 @@ const CommentCard: React.FC<CommentProps> = ({
     }
 
     const handleSaveEdit = async () => {
+        // Defense-in-depth: Ensure only the comment owner can edit
+        if (!user || user.id !== userID) {
+            alert('You are not authorized to edit this comment.')
+            return
+        }
         try {
             await apiClient.put(`/review/comments/${commentId}/`, {
                 body: editedBody,
