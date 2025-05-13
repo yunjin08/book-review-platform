@@ -14,6 +14,7 @@ class BookView(GenericView):
         average_rating=Avg('reviews__rating')  # Annotate average_rating
     )
     serializer_class = BookSerializer
+    permission_classes = [IsTokenValidated]
 
     def get_serializer(self, *args, **kwargs):
         # Initialize the serializer with the provided arguments and context
@@ -39,6 +40,3 @@ class GenreView(GenericView):
 class AuthorView(GenericView):
     queryset = Author.objects.all()
     serializer_class = AuthorSerializer
-
-
-
