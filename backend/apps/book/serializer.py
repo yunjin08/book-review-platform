@@ -49,7 +49,6 @@ class BookSerializer(serializers.ModelSerializer):
         try:
             # Get the logged-in user from the context
             user = self.context.get('request').user if self.context.get('request') else None
-            print(user, 'test')
 
             # Ensure the user is authenticated
             if not user or user.is_anonymous:
