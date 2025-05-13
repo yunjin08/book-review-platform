@@ -2,7 +2,9 @@ from .models import Book, Genre, Author
 from apps.review.serializer import ReviewSerializer
 from rest_framework import serializers
 from apps.account.serializer import CustomUserSerializer
+import logging
 
+logger = logging.getLogger(__name__)
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
@@ -62,8 +64,10 @@ class BookSerializer(serializers.ModelSerializer):
             return super().create(validated_data)
 
         except Exception as e:
-            # Catch any other unexpected errors
-            raise serializers.ValidationError(f"An error occurred while creating the book: {str(e)}")
+            # Log the detailed error internally
+            logger.exception("An unexpected error occurred while creating the book.")
+            # Return a generic error message to the client
+            raise serializers.ValidationError("An internal error occurred while creating the book.")
 
 
 class AuthorSerializer(serializers.ModelSerializer):
