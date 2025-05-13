@@ -11,6 +11,8 @@ from django.db import transaction
 
 import json
 
+from django.db.models.fields.related import ForeignObjectRel
+
 
 class GenericView(viewsets.ViewSet):
     """
@@ -224,18 +226,54 @@ class GenericView(viewsets.ViewSet):
             except json.JSONDecodeError:
                 return value  # Return as plain string if not valid JSON
 
+        # Fields used for model lookup
+        model = getattr(self.queryset, "model", None)
+        if not model:
+            raise ValidationError("No model found on queryset.")
+
+        # Build a set of all model fields for default ["*"] allowance
+        # Exclude reverse relations
+        direct_field_names = set(
+            f.name for f in model._meta.get_fields() 
+            if not (isinstance(f, ForeignObjectRel) or f.auto_created)
+        )
+
+        # Safe keys for filtering/exclude: 
+        # Rule: if allowed_filter_fields == ["*"], allow only direct model fields, no __-lookups
+        # If allowed_filter_fields is set, allow only keys in it, and no __ unless explicitly allowed
+
         for key, value in request.query_params.items():
             if key.startswith("exclude__"):
-                parsed_value = parse_value(value)
-                excludes[key[9:]] = parsed_value
+                target_field = key[9:]
+                # For excludes, same safety as filters
+                if self.allowed_filter_fields == ["*"]:
+                    # Only allow exclude on top-level direct model fields
+                    if "__" in target_field or target_field not in direct_field_names:
+                        continue
+                    parsed_value = parse_value(value)
+                    excludes[target_field] = parsed_value
+                else:
+                    # Only allow exclude on allowed fields
+                    if target_field not in self.allowed_filter_fields:
+                        continue
+                    # Disallow lookups unless explicitly whitelisted
+                    if "__" in target_field and target_field not in self.allowed_filter_fields:
+                        continue
+                    parsed_value = parse_value(value)
+                    excludes[target_field] = parsed_value
             else:
-                if (
-                    key in self.allowed_filter_fields
-                    or "*" in self.allowed_filter_fields
-                ):
+                # For filters
+                if self.allowed_filter_fields == ["*"]:
+                    # Only allow direct field names (no lookups, no __)
+                    if "__" in key or key not in direct_field_names:
+                        continue
                     parsed_value = parse_value(value)
                     filters[key] = parsed_value
-
+                else:
+                    # Allow key if it's in allowed_filter_fields
+                    if key in self.allowed_filter_fields:
+                        parsed_value = parse_value(value)
+                        filters[key] = parsed_value
         return filters, excludes
 
     def get_pagination_params(self, filters):
