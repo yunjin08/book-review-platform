@@ -39,7 +39,11 @@ class Migration(migrations.Migration):
             name='Comment',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('body', models.TextField()),
+                ('body', models.TextField(
+                    validators=[
+                        django.core.validators.MaxLengthValidator(2000)
+                    ]
+                )),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='comments', to=settings.AUTH_USER_MODEL)),
