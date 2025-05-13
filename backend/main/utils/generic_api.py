@@ -11,7 +11,6 @@ from django.db import transaction
 
 import json
 
-
 class GenericView(viewsets.ViewSet):
     """
     # GenericView
@@ -68,7 +67,7 @@ class GenericView(viewsets.ViewSet):
 
             cached_data = None
             if self.cache_key_prefix:
-                cache_key = self.get_list_cache_key(filters, excludes, top, bottom)
+                cache_key = self.get_list_cache_key(request, filters, excludes, top, bottom)
                 cached_data = cache.get(cache_key)
             if cached_data:
                 return Response(cached_data, status=status.HTTP_200_OK)
@@ -85,13 +84,13 @@ class GenericView(viewsets.ViewSet):
 
         cached_object = None
         if self.cache_key_prefix:
-            cache_key = self.get_object_cache_key(pk)
+            cache_key = self.get_object_cache_key(request, pk)
             cached_object = cache.get(cache_key)
         if cached_object:
             return Response(cached_object, status=status.HTTP_200_OK)
 
         object = self.get_serialized_object(pk)
-        self.cache_object(object, pk)
+        self.cache_object(request, object, pk)
         return Response(object, status=status.HTTP_200_OK)
 
     @transaction.atomic
@@ -106,8 +105,8 @@ class GenericView(viewsets.ViewSet):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             instance = serializer.save()
-            self.cache_object(serializer.data, instance.pk)
-            self.invalidate_list_cache()
+            self.cache_object(request, serializer.data, instance.pk)
+            self.invalidate_list_cache(request)
 
             self.post_create(request, instance)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -134,8 +133,8 @@ class GenericView(viewsets.ViewSet):
         serializer = self.serializer_class(instance, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            self.cache_object(serializer.data, pk)
-            self.invalidate_list_cache()
+            self.cache_object(request, serializer.data, pk)
+            self.invalidate_list_cache(request)
 
             self.post_update(request, instance)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -149,8 +148,8 @@ class GenericView(viewsets.ViewSet):
         self.initialize_queryset(request)
 
         instance = get_object_or_404(self.queryset, pk=pk)
-        self.delete_cache(pk)
-        self.invalidate_list_cache()
+        self.delete_cache(request, pk)
+        self.invalidate_list_cache(request)
         self.pre_destroy(instance)
         if hasattr(instance, "removed"):
             instance.removed = True
@@ -181,31 +180,47 @@ class GenericView(viewsets.ViewSet):
         pass
 
     # Cache operations
-    def delete_cache(self, pk):
+    def delete_cache(self, request, pk):
         if not self.cache_key_prefix:
             return
-        cache_key = self.get_object_cache_key(pk)
+        cache_key = self.get_object_cache_key(request, pk)
         cache.delete(cache_key)
 
-    def invalidate_list_cache(self):
+    def invalidate_list_cache(self, request):
         if not self.cache_key_prefix:
             return
-        cache.delete_pattern(f"{self.cache_key_prefix}_list_*")
+        user_cache_key_part = self._get_user_cache_key_part(request)
+        # Invalidate all list cache keys for this user
+        cache.delete_pattern(f"{self.cache_key_prefix}_list_{user_cache_key_part}_*")
 
-    def cache_object(self, object_data, pk):
+    def cache_object(self, request, object_data, pk):
         if not self.cache_key_prefix:
             return
-        cache_key = self.get_object_cache_key(pk)
+        cache_key = self.get_object_cache_key(request, pk)
         cache.set(cache_key, object_data, self.cache_duration)
 
-    def get_object_cache_key(self, pk):
-        return f"{self.cache_key_prefix}_object_{pk}"
+    def get_object_cache_key(self, request, pk):
+        user_cache_key_part = self._get_user_cache_key_part(request)
+        return f"{self.cache_key_prefix}_object_{user_cache_key_part}_{pk}"
 
-    def get_list_cache_key(self, filters, excludes, top, bottom):
+    def get_list_cache_key(self, request, filters, excludes, top, bottom):
+        user_cache_key_part = self._get_user_cache_key_part(request)
         return (
-            f"{self.cache_key_prefix}_list_{hash(frozenset(filters.items()))}_"
+            f"{self.cache_key_prefix}_list_{user_cache_key_part}_"
+            f"{hash(frozenset(filters.items()))}_"
             f"{hash(frozenset(excludes.items()))}_{top}_{bottom}"
         )
+
+    def _get_user_cache_key_part(self, request):
+        user = getattr(request, 'user', None)
+        if user is None or not user.is_authenticated:
+            return 'anon'
+        # It's safer to use something unique and not user.display, e.g., pk or username.
+        if hasattr(user, "pk") and user.pk is not None:
+            return f"user{user.pk}"
+        if hasattr(user, "username") and user.username:
+            return f"user_{user.username}"
+        return "unknownuser"
 
     # Helper methods
     def parse_query_params(self, request):
@@ -276,7 +291,7 @@ class GenericView(viewsets.ViewSet):
             "current_page": page.number,
         }
 
-        cache_key = self.get_list_cache_key(filters, excludes, top, bottom)
+        cache_key = self.get_list_cache_key(request, filters, excludes, top, bottom)
         cache.set(cache_key, data, self.cache_duration)
 
         return Response(data, status=status.HTTP_200_OK)
