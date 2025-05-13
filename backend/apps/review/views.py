@@ -8,6 +8,7 @@ from .serializer import ReviewSerializer, CommentSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db.models import Avg
+from django.db import IntegrityError  # Added for database-level race protection
 
 class ReviewView(GenericView):
     queryset = Review.objects.select_related('user', 'book').annotate(
@@ -39,13 +40,21 @@ class ReviewView(GenericView):
         serializer.is_valid(raise_exception=True)
 
         book = serializer.validated_data.get('book')
+        # Keep this check for usability (fast fail), but database uniqueness is the real protection
         if Review.objects.filter(user=request.user, book=book).exists():
             return Response(
                 {"detail": "You have already reviewed this book."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        # Save while injecting user (since 'user' is read_only)
-        instance = serializer.save(user=request.user)
+        try:
+            # Save while injecting user (since 'user' is read_only)
+            instance = serializer.save(user=request.user)
+        except IntegrityError:
+            # Race-condition safe: catch unique constraint violation
+            return Response(
+                {"detail": "You have already reviewed this book."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         self.post_create(request, instance)  # Call your custom post-create hook
 
@@ -85,3 +94,15 @@ class CommentView(GenericView):
         if instance.user != self.request.user:
             raise PermissionDenied("You can only delete your own comments")
 
+
+# ---- PATCH SECTION ----
+# Add the following (or equivalent) to Review model in .models (not shown in this file, but must be present for full fix):
+
+# from django.db import models
+# class Review(models.Model):
+#     ...
+#     class Meta:
+#         constraints = [
+#             models.UniqueConstraint(fields=['user', 'book'], name='unique_user_book_review')
+#         ]
+# ---- END PATCH SECTION ----
