@@ -20,6 +20,15 @@ from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from jwt.exceptions import InvalidTokenError, ExpiredSignatureError
 from rest_framework import status
 
+try:
+    # Only import blacklist if the package is available (should be, as per project usage).
+    from rest_framework_simplejwt.exceptions import TokenError
+    from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
+    from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
+    from rest_framework_simplejwt.tokens import RefreshToken
+    blacklist_support = True
+except ImportError:
+    blacklist_support = False
 
 class UserView(GenericView):
     queryset = CustomUser.objects.all()
@@ -187,9 +196,29 @@ class RegistrationView(APIView):
 class LogoutView(APIView):
     permission_classes = [AllowAny]
     def post(self, request, format=None):
-        # In JWT, logout is handled client-side by removing the token
-        # We can add any server-side cleanup here if needed
-        return Response({"message": "Successfully logged out"})
+        """
+        Implements server-side JWT logout by blacklisting the provided refresh token.
+        Clients should POST {"refresh": "<token>"} in the request body.
+        """
+        refresh_token = request.data.get("refresh", None)
+        if not refresh_token:
+            return Response({"error": "Refresh token is required to logout."}, status=400)
+
+        if blacklist_support:
+            try:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+                return Response({"message": "Successfully logged out and refresh token revoked."})
+            except TokenError as e:
+                # If token is already blacklisted or invalid, accept logout as idempotent.
+                return Response({"message": "Token already blacklisted or invalidated."})
+            except Exception as e:
+                return Response({"error": str(e)}, status=400)
+        else:
+            return Response(
+                {"error": "Blacklisting not supported by server configuration."},
+                status=501
+            )
 
 class TokenVerificationView(APIView):
     permission_classes = [AllowAny]
