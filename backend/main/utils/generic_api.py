@@ -88,11 +88,14 @@ class GenericView(viewsets.ViewSet):
             cache_key = self.get_object_cache_key(pk)
             cached_object = cache.get(cache_key)
         if cached_object:
+            # To be safe, retrieve the instance and check permissions even when serving from cache
+            instance = get_object_or_404(self.queryset, pk=pk)
+            self.check_object_permissions(request, instance)
             return Response(cached_object, status=status.HTTP_200_OK)
 
-        object = self.get_serialized_object(pk)
-        self.cache_object(object, pk)
-        return Response(object, status=status.HTTP_200_OK)
+        object_data = self.get_serialized_object(request, pk)
+        self.cache_object(object_data, pk)
+        return Response(object_data, status=status.HTTP_200_OK)
 
     @transaction.atomic
     def create(self, request):
@@ -121,6 +124,8 @@ class GenericView(viewsets.ViewSet):
         self.initialize_queryset(request)
 
         instance = get_object_or_404(self.queryset, pk=pk)
+        self.check_object_permissions(request, instance)
+
         self.pre_update(request, instance)
 
         if "*" not in self.allowed_update_fields:
@@ -149,6 +154,7 @@ class GenericView(viewsets.ViewSet):
         self.initialize_queryset(request)
 
         instance = get_object_or_404(self.queryset, pk=pk)
+        self.check_object_permissions(request, instance)
         self.delete_cache(pk)
         self.invalidate_list_cache()
         self.pre_destroy(instance)
@@ -281,8 +287,9 @@ class GenericView(viewsets.ViewSet):
 
         return Response(data, status=status.HTTP_200_OK)
 
-    def get_serialized_object(self, pk):
+    def get_serialized_object(self, request, pk):
         instance = get_object_or_404(self.queryset, pk=pk)
+        self.check_object_permissions(request, instance)
         return self.serializer_class(instance).data
 
     def initialize_queryset(self, request):
