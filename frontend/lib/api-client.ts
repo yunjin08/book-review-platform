@@ -2,6 +2,10 @@ import { apiClient, axiosInstance, initApiClient } from './api'
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import { useAuthStore } from '@/store/auth'
 import { clearTokens, getToken } from '@/utils/token'
+
+// Keep track of the allowed backend origin
+let backendOrigin: string | null = null
+
 // Check if the URL matches a public endpoint that doesn't need authentication
 const isPublicEndpoint = (url?: string): boolean => {
     if (!url) return false
@@ -41,11 +45,33 @@ const handleLogout = async (): Promise<void> => {
     }
 }
 
-// Request interceptor
+// Request interceptor with backend origin check
 const requestInterceptor = async (
     reqConfig: InternalAxiosRequestConfig
 ): Promise<InternalAxiosRequestConfig> => {
     if (isPublicEndpoint(reqConfig.url)) {
+        return reqConfig
+    }
+
+    // Do not attach auth header unless the URL is:
+    // - relative, or
+    // - absolute and matches backend origin exactly
+    let isAllowed = false
+    if (reqConfig.url) {
+        try {
+            // If it's an absolute URL, check its origin
+            // This will throw if url is relative (not absolute)
+            const urlObj = new URL(reqConfig.url, backendOrigin || "http://localhost")
+            if (urlObj.origin === backendOrigin) {
+                isAllowed = true
+            }
+        } catch {
+            // Relative URLs cannot be parsed with "new URL" without base; they're fine for our backend
+            isAllowed = true
+        }
+    }
+
+    if (!isAllowed) {
         return reqConfig
     }
 
@@ -121,6 +147,13 @@ export const initApiWithAuth = (baseURL: string): void => {
             'Content-Type': 'application/json',
         },
     })
+    // Parse and store backend origin for cross-origin checks
+    try {
+        const url = new URL(baseURL, window?.location?.origin || 'http://localhost')
+        backendOrigin = url.origin
+    } catch {
+        backendOrigin = null
+    }
     // Add interceptors to the axios instance
     if (axiosInstance) {
         axiosInstance.interceptors.request.use(
