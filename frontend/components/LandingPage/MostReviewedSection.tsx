@@ -61,7 +61,7 @@ export default function MostReviewedSection({
             ) : error ? (
                 <div className="w-full text-center py-64">
                     <p className="text-lg text-red-500">
-                        {error.name}: {error.message}
+                        Failed to load books. Please try again later.
                     </p>
                 </div>
             ) : books.length === 0 ? (
