@@ -85,8 +85,8 @@ class ReadingListView(GenericView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def perform_create(self, serializer):
-        # Save the serializer instance
-        serializer.save()
+        # Save the serializer instance with user enforced to request.user
+        serializer.save(user=self.request.user)
 
     def filter_queryset(self, filters, excludes):
         # Add custom filtering logic if needed
