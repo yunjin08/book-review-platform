@@ -42,6 +42,51 @@ interface Genre {
     name: string
 }
 
+// --- START PATCH: Image URL Validation Function ---
+/**
+ * Only allow http, https, or relative (no scheme) URLs to protect against XSS
+ */
+function isSafeImageUrl(url: string): boolean {
+    if (!url) return false
+    // Reject 'javascript:', 'data:', 'file:', etc.
+    // Allow URLs that start with http://, https://, or with no protocol (/ or ./ or ../)
+    try {
+        // Trim whitespace
+        const trimmed = url.trim()
+        // Absolute URLs
+        if (
+            trimmed.startsWith('http://') ||
+            trimmed.startsWith('https://')
+        ) {
+            return true
+        }
+        // Disallow protocol-relative URLs (e.g., //domain)
+        if (trimmed.startsWith('//')) {
+            return false
+        }
+        // Relative URLs (start with / or ./ or ../)
+        if (
+            trimmed.startsWith('/') ||
+            trimmed.startsWith('./') ||
+            trimmed.startsWith('../')
+        ) {
+            return true
+        }
+        // If the URL contains a ':' before any '/', it has a scheme => unsafe
+        const colonIdx = trimmed.indexOf(':')
+        const slashIdx = trimmed.indexOf('/')
+        if (colonIdx > -1 && (slashIdx === -1 || colonIdx < slashIdx)) {
+            return false
+        }
+        // Otherwise, safe (plain filenames or relative paths)
+        return true
+    } catch {
+      // In case of parsing errors, treat as unsafe
+      return false
+    }
+}
+// --- END PATCH ---
+
 export default function AddBookModal({
     onSubmit,
     open,
@@ -226,7 +271,8 @@ export default function AddBookModal({
                             placeholder="Enter image URL"
                             onChange={handleChange}
                         />
-                        {formData.cover_image && (
+                        {/* PATCH: Only preview if the URL is safe */}
+                        {formData.cover_image && isSafeImageUrl(formData.cover_image) && (
                             <div className="mt-2">
                                 <p className="text-sm text-gray-500">
                                     Preview:
