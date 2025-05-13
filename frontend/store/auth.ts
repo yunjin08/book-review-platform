@@ -3,7 +3,6 @@ import { apiClient, axiosInstance } from '../lib/api'
 import { User } from '@/interface'
 import { saveTokens, clearTokens, getToken } from '@/utils/token'
 
-
 // Auth state interface for the store
 interface AuthState {
     user: User | null
@@ -32,8 +31,6 @@ export interface RegisterData {
     password: string
 }
 
-
-
 // Auth store using Zustand
 export const useAuthStore = create<AuthState>((set, get) => ({
     user: null,
@@ -46,13 +43,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         try {
             const response = await apiClient.post<{
                 token: string
-                refresh: string
+                refresh?: string
                 user: User
             }>('/account/authenticate/', { username, password })
 
+            // Store only the access token and email in JS-accessible storage.
+            // The refresh token should NOT be stored in JS-accessible storage to avoid XSS leakage.
+            // The backend must set the refresh token in a secure, HttpOnly, SameSite=Strict cookie.
             saveTokens({
                 access: response.token,
-                refresh: response.refresh,
                 email: response.user.email,
             })
 
@@ -79,13 +78,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         try {
             const response = await apiClient.post<{
                 token: string
-                refresh: string
+                refresh?: string
                 user: User
             }>('/account/registration/', data)
 
+            // Store only the access token and email in JS-accessible storage.
+            // The backend must set the refresh token in a secure, HttpOnly, SameSite=Strict cookie.
             saveTokens({
                 access: response.token,
-                refresh: response.refresh,
                 email: response.user.email,
             })
 
@@ -195,14 +195,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     },
 
     refreshToken: async () => {
-        const { refresh } = getToken()
-        if (!refresh) return false
-
+        // No longer rely on the refresh token from JS-accessible storage.
+        // Instead, the backend should read the refresh token from a secure, HttpOnly cookie.
         try {
-            const response = await apiClient.post<{
-                token: string
-            }>('/account/refresh-token/', { refresh })
-
+            // Do not pass the refresh token to the backend; rely on cookie-based authentication.
+            const response = await apiClient.post<{ token: string }>(
+                '/account/refresh-token/'
+            )
             
             // Only update the access token
             saveTokens({
