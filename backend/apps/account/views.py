@@ -111,7 +111,7 @@ class AuthenticationView(APIView):
         username = request_data["username"]
         password = request_data["password"]
 
-        print(username, password)
+        # Removed print statement to avoid logging sensitive credentials
 
         user = authenticate(username=username, password=password)
 
