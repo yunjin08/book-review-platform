@@ -3,7 +3,6 @@ import { apiClient, axiosInstance } from '../lib/api'
 import { User } from '@/interface'
 import { saveTokens, clearTokens, getToken } from '@/utils/token'
 
-
 // Auth state interface for the store
 interface AuthState {
     user: User | null
@@ -31,8 +30,6 @@ export interface RegisterData {
     email: string
     password: string
 }
-
-
 
 // Auth store using Zustand
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -106,21 +103,33 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     logout: async () => {
         set({ isLoading: true, error: null })
         try {
-            // Try to call the backend logout endpoint if we have an axios instance
-            if (axiosInstance) {
-                await axiosInstance.post('/account/logout/')
+            // Must have axiosInstance to perform server logout
+            if (!axiosInstance) {
+                set({
+                    isLoading: false,
+                    error: new Error('Unable to contact server to log out. Please try again.'),
+                })
+                return;
             }
+            await axiosInstance.post('/account/logout/')
         } catch (error) {
             console.error('Failed to logout on server', error)
-            // Continue with logout process regardless of server response
+            set({
+                isLoading: false,
+                error: error instanceof Error
+                    ? error
+                    : new Error(error ? String(error) : 'Failed to logout on server'),
+            })
+            return;
         }
 
-        // Always clear local state
+        // Only clear local state and redirect when backend logout succeeds
         clearTokens()
         set({
             user: null,
             isAuthenticated: false,
             isLoading: false,
+            error: null,
         })
 
         // Redirect to login page
