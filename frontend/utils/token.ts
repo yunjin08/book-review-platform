@@ -7,66 +7,45 @@ const STORAGE_KEYS = {
     EMAIL: 'user_email'
 }
 
-// Get tokens from cookies
-export const getToken = (): {
-    token: string | null
-    refresh: string | null
-    email: string | null
-} => {
-    const accessToken = Cookies.get(STORAGE_KEYS.ACCESS_TOKEN)
-    const refreshToken = Cookies.get(STORAGE_KEYS.REFRESH_TOKEN)
-    const email = Cookies.get(STORAGE_KEYS.EMAIL)
+/**
+ * IMPORTANT SECURITY NOTICE:
+ * 
+ * Access tokens and refresh tokens MUST NOT be stored in client-accessible JavaScript cookies, storage, or context.
+ * Tokens should only ever be set, read, and cleared by the backend using HttpOnly and Secure flags on Set-Cookie.
+ * 
+ * This code removes all client-side storage for auth tokens to prevent session hijacking via XSS. See CWE-1004.
+ */
 
-    
-    return {
-        token: accessToken || null,
-        refresh: refreshToken || null,
-        email: email || null,
-    }
+// Get email (non-sensitive) from cookies if needed. Tokens cannot be read client-side if using HttpOnly cookies.
+export const getEmail = (): string | null => {
+    const email = Cookies.get(STORAGE_KEYS.EMAIL)
+    return email || null
 }
 
-// Common cookie options to ensure consistent behavior across browsers
+// Common cookie options for non-sensitive information (like email)
 const getCookieOptions = (expiresInDays = 7) => ({
     expires: expiresInDays,
     path: '/',
     sameSite: 'Lax' as const,
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: false
-});
+    secure: process.env.NODE_ENV === 'production'
+    // Do NOT include httpOnly: false -- only server can set HttpOnly cookies
+})
 
-// Save tokens to cookies
-export const saveTokens = (tokens: AuthTokens): void => {
-    // Get existing tokens first
-    const existingTokens = getToken();
-    
-    // Access token handling
-    if (tokens.access) {
-        Cookies.set(STORAGE_KEYS.ACCESS_TOKEN, tokens.access, getCookieOptions(7))
-    } else if (existingTokens.token) {
-        // Keep existing access token if not provided
-        Cookies.set(STORAGE_KEYS.ACCESS_TOKEN, existingTokens.token, getCookieOptions(7))
-    }
-    
-    // Refresh token handling
-    if (tokens.refresh) {
-        Cookies.set(STORAGE_KEYS.REFRESH_TOKEN, tokens.refresh, getCookieOptions(14))
-    } else if (existingTokens.refresh) {
-        // Keep existing refresh token if not provided
-        Cookies.set(STORAGE_KEYS.REFRESH_TOKEN, existingTokens.refresh, getCookieOptions(14))
-    }
-    
-    // Email handling
-    if (tokens.email) {
-        Cookies.set(STORAGE_KEYS.EMAIL, tokens.email, getCookieOptions(14))
-    } else if (existingTokens.email) {
-        // Keep existing email if not provided
-        Cookies.set(STORAGE_KEYS.EMAIL, existingTokens.email, getCookieOptions(14))
+// Save email (non-sensitive) to cookies; do not save tokens in JS-accessible cookies
+export const saveEmail = (email: string): void => {
+    if (email) {
+        Cookies.set(STORAGE_KEYS.EMAIL, email, getCookieOptions(14))
     }
 }
 
-// Clear tokens from cookies
-export const clearTokens = (): void => {
-    Cookies.remove(STORAGE_KEYS.ACCESS_TOKEN)
-    Cookies.remove(STORAGE_KEYS.REFRESH_TOKEN)
+// Clear email from cookies; tokens are NOT handled in JS cookies anymore
+export const clearEmail = (): void => {
     Cookies.remove(STORAGE_KEYS.EMAIL)
 }
+
+/**
+ * Deprecated/Removed: Token management in frontend cookies has been eliminated for security.
+ * All access/refresh token handling should rely on secure, HttpOnly cookies set via backend.
+ * 
+ * Attempting to set or get tokens from JS-accessible cookies is unsafe and no longer supported.
+ */
