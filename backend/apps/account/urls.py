@@ -3,13 +3,16 @@ from .views import UserView, AuthenticationView, RegistrationView, ReadingListVi
 
 urlpatterns = [
     path("users/", UserView.as_view({"get": "list"}), name="users"),
-    path("users/<int:pk>/", UserView.as_view({"get": "retrieve"}), name="user-detail"),
-    path("users/<int:pk>/reviews/", UserView.as_view({"get": "reviews"}), name="user-reviews"),
-    path("users/<int:pk>/reading_history/", UserView.as_view({"get": "reading_history"}), name="user-reading-history"),
-    path("users/<int:pk>/currently_reading/", UserView.as_view({"get": "currently_reading"}), name="user-currently-reading"),
+    # Only allow access to the authenticated user's own details via 'profile' endpoint
     path("users/profile/", UserView.as_view({"get": "profile"}), name="user-profile"),
+    path("users/profile/reviews/", UserView.as_view({"get": "reviews"}), name="user-reviews"),
+    path("users/profile/reading_history/", UserView.as_view({"get": "reading_history"}), name="user-reading-history"),
+    path("users/profile/currently_reading/", UserView.as_view({"get": "currently_reading"}), name="user-currently-reading"),
+    # Endpoints by arbitrary <pk> removed to prevent IDOR vulnerabilities
+
+    # ReadingList endpoints: ensure in the view that only the authenticated user may access their own reading list.
     path(
-        "<int:pk>/reading_list",
+        "reading_list/<int:pk>/",
         ReadingListView.as_view({"get": "retrieve", "put": "update", "delete": "destroy"}),
         name="document-detail",
     ),
