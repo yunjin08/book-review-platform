@@ -20,7 +20,6 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -33,7 +32,6 @@ JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
-
 
 # Application definition
 
@@ -143,14 +141,25 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOW_CREDENTIALS = True
 
-# CSRF
+# CSRF and Session Cookie Security
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
 ]
 CSRF_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_HTTPONLY = False
+
+# Apply secure cookie flags in production (DEBUG=False)
+if DEBUG:
+    CSRF_COOKIE_SECURE = False
+    CSRF_COOKIE_HTTPONLY = False
+    SESSION_COOKIE_SECURE = False
+    SESSION_COOKIE_HTTPONLY = False
+else:
+    CSRF_COOKIE_SECURE = True
+    CSRF_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+
 CSRF_USE_SESSIONS = False
-CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
 
 # REST Framework settings
 REST_FRAMEWORK = {
