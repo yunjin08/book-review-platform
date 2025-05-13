@@ -1,3 +1,4 @@
+import os
 import random
 from django.core.management.base import BaseCommand
 from apps.book.models import Book, Genre, Author
@@ -86,14 +87,14 @@ BOOKS = [
 ]
 
 USERS = [
-    {"username": "john_doe", "email": "john@example.com", "password": "password123"},
-    {"username": "jane_doe", "email": "jane@example.com", "password": "password123"},
-    {"username": "admin", "email": "admin@example.com", "password": "admin123", "is_staff": True, "is_superuser": True},
-    {"username": "alice", "email": "alice@example.com", "password": "password123"},
-    {"username": "bob", "email": "bob@example.com", "password": "password123"},
-    {"username": "charlie", "email": "charlie@example.com", "password": "password123"},
-    {"username": "dave", "email": "dave@example.com", "password": "password123"},
-    {"username": "eve", "email": "eve@example.com", "password": "password123"},
+    {"username": "john_doe", "email": "john@example.com", "is_staff": False, "is_superuser": False},
+    {"username": "jane_doe", "email": "jane@example.com", "is_staff": False, "is_superuser": False},
+    {"username": "admin", "email": "admin@example.com", "is_staff": True, "is_superuser": True},
+    {"username": "alice", "email": "alice@example.com", "is_staff": False, "is_superuser": False},
+    {"username": "bob", "email": "bob@example.com", "is_staff": False, "is_superuser": False},
+    {"username": "charlie", "email": "charlie@example.com", "is_staff": False, "is_superuser": False},
+    {"username": "dave", "email": "dave@example.com", "is_staff": False, "is_superuser": False},
+    {"username": "eve", "email": "eve@example.com", "is_staff": False, "is_superuser": False},
 ]
 
 REVIEWS = [
@@ -132,13 +133,23 @@ class Command(BaseCommand):
         # Create users
         self.stdout.write("Creating users...")
         for user_data in USERS:
+            env_password_var = f"INIT_USER_PASSWORD_{user_data['username'].upper()}"
+            password = os.environ.get(env_password_var)
+            if not password:
+                self.stdout.write(
+                    self.style.WARNING(
+                        f"Password environment variable '{env_password_var}' not set. "
+                        f"Skipping creation of user '{user_data['username']}'."
+                    )
+                )
+                continue
             user, created = CustomUser.objects.get_or_create(
                 username=user_data["username"],
                 email=user_data["email"],
                 defaults={"is_staff": user_data.get("is_staff", False), "is_superuser": user_data.get("is_superuser", False)},
             )
             if created:
-                user.set_password(user_data["password"])
+                user.set_password(password)
                 user.save()
 
         # Create reviews
@@ -157,4 +168,3 @@ class Command(BaseCommand):
                     )
 
         self.stdout.write(self.style.SUCCESS("Database populated with initial data!"))
-
