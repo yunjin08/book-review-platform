@@ -6,13 +6,26 @@ from apps.book.models import Book
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = "__all__"
+        fields = (
+            'id',
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            # Add any other non-sensitive custom fields as needed
+        )
 
 class ReadingListSerializer(serializers.ModelSerializer):
     book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
     class Meta:
         model = ReadingList
-        fields = "__all__"
+        fields = (
+            'id',
+            'book',
+            'status',
+            'user',
+            # Add any other non-sensitive fields explicitly if required
+        )
         read_only_fields = ['user']
 
     def to_representation(self, instance):
