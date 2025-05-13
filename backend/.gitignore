@@ -1,6 +1,43 @@
+# -----------------------------------------------------------------------------
+# SECURITY NOTICE: DO NOT COMMIT SECRETS OR PRIVATE DATA TO THIS REPOSITORY!
+# The patterns below prevent common sensitive files from being added to git.
+# If such files were previously committed, you MUST remove them from git history.
+# For guidance, see: https://help.github.com/articles/removing-sensitive-data-from-a-repository/
+# -----------------------------------------------------------------------------
+
+# Environment variable files (may contain API keys, credentials, etc.)
 .env
+.env.*
+!.env.example  # Allow safe templates
+*.env
+
+# Python version file (not sensitive, but specific to your dev environment)
 .python-version
+
+# Python caches, virtualenvs, and test caches
 **/__pycache__/
+**/*.py[cod]
 .pytest_cache/
+.vscode/
+*.pyc
+
+# SQLite database (stores raw user data)
 db.sqlite3
+*.sqlite3
+*.db
+
+# Service account / cloud provider key files (NEVER commit credentials)
 key.json
+*.key.json
+*.service-account.json
+
+# System/IDE files
+.DS_Store
+
+# Node and pip cache directories (optional)
+node_modules/
+pip-wheel-metadata/
+
+# -----------------------------------------------------------------------------
+# END OF SENSITIVE FILE PROTECTIONS
+# -----------------------------------------------------------------------------
