@@ -25,10 +25,13 @@ class UserView(GenericView):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
     size_per_request = 1000
+
     @action(detail=True, methods=['get'])
     def profile(self, request, pk=None):
         """Get user profile"""
         user = self.get_object()
+        if request.user.pk != user.pk:
+            return Response({'detail': 'Forbidden.'}, status=status.HTTP_403_FORBIDDEN)
         serializer = CustomUserSerializer(user)
         return Response(serializer.data)
 
@@ -36,6 +39,8 @@ class UserView(GenericView):
     def reviews(self, request, pk=None):
         """Get all reviews for a specific user"""
         user = self.get_object()
+        if request.user.pk != user.pk:
+            return Response({'detail': 'Forbidden.'}, status=status.HTTP_403_FORBIDDEN)
         reviews = user.reviews.all()  # Assuming you have a related_name='reviews' on your Review model
         serializer = ReviewSerializer(reviews, many=True)
         return Response(serializer.data)
@@ -44,6 +49,8 @@ class UserView(GenericView):
     def reading_history(self, request, pk=None):
         """Get complete reading history for a user"""
         user = self.get_object()
+        if request.user.pk != user.pk:
+            return Response({'detail': 'Forbidden.'}, status=status.HTTP_403_FORBIDDEN)
         reading_lists = user.reading_lists.all()
         serializer = ReadingListSerializer(reading_lists, many=True)
         return Response(serializer.data)
@@ -52,6 +59,8 @@ class UserView(GenericView):
     def currently_reading(self, request, pk=None):
         """Get books the user is currently reading"""
         user = self.get_object()
+        if request.user.pk != user.pk:
+            return Response({'detail': 'Forbidden.'}, status=status.HTTP_403_FORBIDDEN)
         current_books = user.reading_lists.filter(status='currently_reading')
         serializer = ReadingListSerializer(current_books, many=True)
         return Response(serializer.data)
