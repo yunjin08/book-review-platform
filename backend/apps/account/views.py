@@ -111,8 +111,6 @@ class AuthenticationView(APIView):
         username = request_data["username"]
         password = request_data["password"]
 
-        print(username, password)
-
         user = authenticate(username=username, password=password)
 
         if user is not None:
