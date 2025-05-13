@@ -1,8 +1,9 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 from .models import CustomUser, ReadingList
 
 @admin.register(CustomUser)
-class CustomUserAdmin(admin.ModelAdmin):
+class CustomUserAdmin(UserAdmin):
     list_display = (
         "username",
         "email",
@@ -15,7 +16,7 @@ class CustomUserAdmin(admin.ModelAdmin):
     search_fields = ("username", "email")
     list_filter = ("is_staff", "is_superuser", "is_active", "date_joined")
     ordering = ("-date_joined",)
-    readonly_fields = ("date_joined", "password")
+    readonly_fields = ("date_joined",)
 
     fieldsets = (
         (None, {"fields": ("first_name", "last_name", "username", "email", "password")}),
@@ -24,10 +25,11 @@ class CustomUserAdmin(admin.ModelAdmin):
         ("Important Dates", {"fields": ("last_login", "date_joined")}),
     )
 
-    def get_readonly_fields(self, request, obj=None):
-        if obj:
-            return self.readonly_fields + ("password",)
-        return self.readonly_fields
-    
+    add_fieldsets = (
+        (None, {
+            "classes": ("wide",),
+            "fields": ("first_name", "last_name", "username", "email", "profile_picture", "password1", "password2", "is_staff", "is_superuser", "is_active"),
+        }),
+    )
 
 admin.site.register(ReadingList)
